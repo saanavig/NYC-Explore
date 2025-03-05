@@ -1,10 +1,11 @@
 import "./login.css";
 
+import { Link } from "react-router-dom";
 import { useState } from "react";
 
 const Login = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
 
 const handleSubmit = (e) => {
     e.preventDefault();
@@ -17,9 +18,9 @@ const handleGoogleLogin = () => {
 
 return (
     <div className="container">
-    <div className="form-box">
-        <h2>Login</h2>
-        <form onSubmit={handleSubmit}>
+        <div className="form-box">
+            <h2>Login</h2>
+            <form onSubmit={handleSubmit}>
         <div className="input-group">
             <label>Email</label>
             <input
@@ -38,12 +39,16 @@ return (
                 required
             />
         </div>
+
         <button type="submit" className="btn">Login</button>
-        </form>
+            </form>
         <button onClick={handleGoogleLogin} className="btn google-btn">
             Sign in with Google
         </button>
-    </div>
+            <Link to="/signup" className="link">
+                Don't have an account? Sign up
+            </Link>
+        </div>
     </div>
 );
 };
