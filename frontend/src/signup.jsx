@@ -16,8 +16,8 @@ const handleSubmit = (e) => {
         console.error("Passwords don't match");
         return;
     }
-    
-    fetch('http://localhost:5000/api/auth/signup', {
+
+    fetch('http://localhost:5000/auth/signup', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

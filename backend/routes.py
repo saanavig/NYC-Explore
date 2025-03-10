@@ -21,7 +21,7 @@ def home():
 def about():
     return "This is the about page."
 
-@app.route('/api/auth/signup', methods=['POST'])
+@app.route('/auth/signup', methods=['POST'])
 def signup():
     data = request.json
     try:
@@ -33,7 +33,7 @@ def signup():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 400
 
-@app.route('/api/auth/login', methods=['POST'])
+@app.route('/auth/login', methods=['POST'])
 def login():
     data = request.json
     try:

@@ -9,7 +9,7 @@ const Login = () => {
 
 const handleSubmit = (e) => {
     e.preventDefault();
-    fetch('http://localhost:5000/api/auth/login', {
+    fetch('http://localhost:5000/auth/login', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -33,7 +33,7 @@ const handleSubmit = (e) => {
 };
 
 const handleGoogleLogin = () => {
-    fetch('http://localhost:5000/api/auth/google')
+    fetch('http://localhost:5000/auth/google')
         .then(response => response.json())
         .then(data => {
             window.location.href = data.url;
