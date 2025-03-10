@@ -1,3 +1,4 @@
+import './global.css';
 import './login.css';
 
 import App from './app';
