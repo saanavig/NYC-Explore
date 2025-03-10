@@ -9,11 +9,38 @@ const Login = () => {
 
 const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Logging in with", email, password);
+    fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') 
+        {
+            console.log('Login successful:', data);
+        } 
+        else 
+        {
+            console.error('Login failed:', data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
 };
 
 const handleGoogleLogin = () => {
-    window.location.href = "http://localhost:8000/auth/social/login/google/";
+    fetch('http://localhost:5000/api/auth/google')
+        .then(response => response.json())
+        .then(data => {
+            window.location.href = data.url;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
 };
 
 return (

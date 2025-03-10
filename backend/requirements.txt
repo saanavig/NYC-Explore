@@ -1,0 +1,8 @@
+Flask==3.0.2
+Flask-Cors==4.0.0
+python-dotenv==1.0.1
+supabase==2.3.5
+requests==2.32.3
+python-jose==3.3.0
+flask-login==0.6.3
+gunicorn==21.2.0

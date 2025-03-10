@@ -13,10 +13,34 @@ const Signup = () => {
 const handleSubmit = (e) => {
     e.preventDefault();
     if (password !== confirmPassword) {
-        alert("Passwords do not match!");
+        console.error("Passwords don't match");
         return;
     }
-    console.log("Signing up with", firstName, lastName, email, password);
+    
+    fetch('http://localhost:5000/api/auth/signup', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            email,
+            password,
+            firstName,
+            lastName
+        }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            // Handle successful signup
+            console.log('Signup successful:', data);
+        } else {
+            console.error('Signup failed:', data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
 };
 
 const handleGoogleSignup = () => {
@@ -85,7 +109,6 @@ return (
             <button onClick={handleGoogleSignup} className="btn google-btn">
                 Sign up with Google
             </button>
-            
             <Link to="/login" className="link">
                 Already have an account? Log in
             </Link>
