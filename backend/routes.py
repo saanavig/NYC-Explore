@@ -57,29 +57,6 @@ def login():
             }), 404
         return jsonify({"status": "error", "message": error_message}), 400
 
-
-# @app.route('/api/auth/google', methods=['GET'])
-# def google_auth():
-#     try:
-#         redirect_uri = "http://127.0.0.1:5000/api/auth/google/callback"
-#         client_id = os.getenv('GOOGLE_CLIENT_ID')
-
-#         oauth_url = (
-#             f"{os.getenv('SUPABASE_URL')}/auth/v1/authorize"
-#             "?provider=google"
-#             f"&client_id={client_id}"
-#             f"&redirect_to={redirect_uri}"
-#             "&response_type=token"
-#             "&prompt=consent"
-#         )
-
-#         print(f"Generated OAuth URL: {oauth_url}")
-
-#         return jsonify({"url": oauth_url}), 200
-#     except Exception as e:
-#         print(f"Error in google_auth: {str(e)}")
-#         return jsonify({"status": "error", "message": str(e)}), 400
-
 @app.route('/api/auth/google', methods=['GET'])
 def google_auth():
     try:
@@ -102,6 +79,53 @@ def google_auth():
     except Exception as e:
         print(f"Error in google_auth: {str(e)}")
         return jsonify({"status": "error", "message": str(e)}), 400
+
+@app.route('/places', methods=['GET'])
+def get_places():
+    try:
+        response = supabase.table("places").select("*").execute()
+        return jsonify({"status": "success", "data": response.data}), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/places', methods=['POST'])
+def add_place():
+    try:
+        data = request.json
+        print("Received data:", data)
+
+        required_fields = ['name', 'location', 'description', 'time', 'cost']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({
+                    "status": "error",
+                    "message": f"Missing required field: {field}"
+                }), 400
+
+        response = supabase.table("places").insert({
+            "name": data['name'],
+            "location": data['location'],
+            "description": data['description'],
+            "time": data['time'],
+            "cost": data['cost'],
+            "image": data.get('image'),
+            "lat": data.get('lat', 40.7128),
+            "lng": data.get('lng', -74.006)
+        }).execute()
+
+        print("Database response:", response)
+
+        return jsonify({
+            "status": "success",
+            "data": response.data
+        }), 201
+
+    except Exception as e:
+        print("Error:", str(e))
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), 400
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

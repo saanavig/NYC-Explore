@@ -1,7 +1,7 @@
 import "./home.css";
 
 import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 const mapContainerStyle = {
     width: "100%",
@@ -14,7 +14,7 @@ const center = {
 };
 
 const Homepage = () => {
-    const [mapError, setMapError] = useState(null);
+    const [places, setPlaces] = useState([]);
     const [showModal, setShowModal] = useState(false);
     const [newPlace, setNewPlace] = useState({
         name: '',
@@ -26,10 +26,16 @@ const Homepage = () => {
     });
     const apiKey = import.meta.env.VITE_MAPS_KEY;
 
-    const handleLoadError = (error) => {
-        console.error("Error loading Google Maps:", error);
-        setMapError("Failed to load Google Maps");
-    };
+    useEffect(() => {
+        fetch("http://127.0.0.1:5000/places")
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === "success") {
+                    setPlaces(data.data);
+                }
+            })
+            .catch(error => console.error("Error fetching places:", error));
+    }, []);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -41,76 +47,108 @@ const Homepage = () => {
 
     const handleImageChange = (e) => {
         const file = e.target.files[0];
-        setNewPlace(prev => ({
-            ...prev,
-            image: file
-        }));
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setNewPlace(prev => ({
+                    ...prev,
+                    image: reader.result
+                }));
+            };
+            reader.readAsDataURL(file);
+        }
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // Handle form submission here
-        console.log('New place:', newPlace);
-        setShowModal(false);
-        setNewPlace({
-            name: '',
-            location: '',
-            description: '',
-            time: '',
-            cost: '',
-            image: null
-        });
-    };
+        console.log('Submitting:', newPlace); // Debug log
 
-    if (!apiKey) {
-        return <div className="container">Error: Google Maps API key not found</div>;
-    }
+        try {
+            const response = await fetch("http://127.0.0.1:5000/places", {
+                method: "POST",
+                headers: { 
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify({
+                    name: newPlace.name,
+                    location: newPlace.location,
+                    description: newPlace.description,
+                    time: newPlace.time,
+                    cost: newPlace.cost,
+                    image: newPlace.image,
+                    lat: center.lat,
+                    lng: center.lng
+                })
+            });
+
+            const data = await response.json();
+            console.log('Response:', data);
+
+            if (data.status === "success") {
+                setPlaces(prevPlaces => [...prevPlaces, data.data[0]]);
+                setShowModal(false);
+                setNewPlace({
+                    name: '',
+                    location: '',
+                    description: '',
+                    time: '',
+                    cost: '',
+                    image: null
+                });
+            }
+            else {
+                console.error('Error:', data.message);
+                alert('Failed to add place. Please try again.');
+            }
+        }
+        catch (error)
+        {
+            console.error('Error adding place:', error);
+            alert('Failed to add place. Please try again.');
+        }
+    };
 
     return (
         <div className="container">
             <div className="content-wrapper">
                 <div className="page-layout">
                     <div className="map-container">
-                        {mapError ? (
-                            <div>Error: {mapError}</div>
-                        ) : (
-                            <LoadScript
-                                googleMapsApiKey={apiKey}
-                                onError={handleLoadError}
-                            >
-                                <GoogleMap
-                                    mapContainerStyle={mapContainerStyle}
-                                    center={center}
-                                    zoom={12}
-                                >
-                                    <Marker position={center} />
-                                </GoogleMap>
-                            </LoadScript>
-                        )}
+                        <LoadScript googleMapsApiKey={apiKey}>
+                            <GoogleMap mapContainerStyle={mapContainerStyle} center={center} zoom={12}>
+                                {places.map((place, index) => (
+                                    <Marker key={index} position={{ lat: parseFloat(place.lat), lng: parseFloat(place.lng) }} />
+                                ))}
+                            </GoogleMap>
+                        </LoadScript>
                     </div>
                     <div className="places-list">
-                        {/* connect with backend */}
                         <div className="places-header">
                             <h2>Places to Visit</h2>
-                            <button className="add-button" onClick={() => setShowModal(true)}>
-                                +
-                            </button>
+                            <button className="add-button" onClick={() => setShowModal(true)}>+</button>
                         </div>
-                        <div className="place-card">
-                            <div className="place-image">Image Placeholder</div>
-                            <div className="place-details">
-                                <h3>Central Park</h3>
-                                <p className="location">Manhattan, New York</p>
-                                <p className="description">
-                                    An urban oasis featuring 843 acres of meadows,
-                                    gardens, and walking paths.
-                                </p>
-                                <div className="additional-info">
-                                    <span>🕒 Open 6 AM - 1 AM</span>
-                                    <span>🎫 Free Entry</span>
+                        {places.map((place) => (
+                            <div className="place-card" key={place.id}>
+                                {place.image ? (
+                                    <div className="place-image">
+                                        <img src={place.image} alt={place.name} />
+                                    </div>
+                                ) : (
+                                    <div className="place-image">
+                                        <span>No Image</span>
+                                    </div>
+                                )}
+                                <div className="place-details">
+                                    <h3>{place.name}</h3>
+                                    <p className="location">{place.location}</p>
+                                    <p className="description">{place.description}</p>
+                                    <div className="additional-info">
+                                        <span>🕒 {place.time}</span>
+                                        <span>🎫 {place.cost}</span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        ))}
                     </div>
                 </div>
             </div>
@@ -122,57 +160,23 @@ const Homepage = () => {
                         <form onSubmit={handleSubmit}>
                             <div className="form-group">
                                 <label htmlFor="name">Name:</label>
-                                <input
-                                    type="text"
-                                    id="name"
-                                    name="name"
-                                    value={newPlace.name}
-                                    onChange={handleInputChange}
-                                    required
-                                />
+                                <input type="text" id="name" name="name" value={newPlace.name} onChange={handleInputChange} required />
                             </div>
                             <div className="form-group">
                                 <label htmlFor="location">Location:</label>
-                                <input
-                                    type="text"
-                                    id="location"
-                                    name="location"
-                                    value={newPlace.location}
-                                    onChange={handleInputChange}
-                                    required
-                                />
+                                <input type="text" id="location" name="location" value={newPlace.location} onChange={handleInputChange} required />
                             </div>
                             <div className="form-group">
                                 <label htmlFor="description">Description:</label>
-                                <textarea
-                                    id="description"
-                                    name="description"
-                                    value={newPlace.description}
-                                    onChange={handleInputChange}
-                                    required
-                                />
+                                <textarea id="description" name="description" value={newPlace.description} onChange={handleInputChange} required />
                             </div>
                             <div className="form-group">
                                 <label htmlFor="time">Event Hours:</label>
-                                <input
-                                    type="text"
-                                    id="time"
-                                    name="time"
-                                    value={newPlace.time}
-                                    onChange={handleInputChange}
-                                    required
-                                />
+                                <input type="text" id="time" name="time" value={newPlace.time} onChange={handleInputChange} required />
                             </div>
                             <div className="form-group">
                                 <label htmlFor="cost">Cost:</label>
-                                <input
-                                    type="text"
-                                    id="cost"
-                                    name="cost"
-                                    value={newPlace.cost}
-                                    onChange={handleInputChange}
-                                    required
-                                />
+                                <input type="text" id="cost" name="cost" value={newPlace.cost} onChange={handleInputChange} required />
                             </div>
                             <div className="form-group">
                                 <label htmlFor="image">Image:</label>
@@ -180,9 +184,15 @@ const Homepage = () => {
                                     type="file"
                                     id="image"
                                     name="image"
-                                    onChange={handleImageChange}
                                     accept="image/*"
+                                    onChange={handleImageChange}
+                                    className="image-input"
                                 />
+                                {newPlace.image && (
+                                    <div className="image-preview">
+                                        <img src={newPlace.image} alt="Preview" />
+                                    </div>
+                                )}
                             </div>
                             <div className="modal-buttons">
                                 <button type="submit">Add Place</button>
