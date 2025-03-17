@@ -12,13 +12,20 @@
     background-color: white;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     z-index: 1000;
+    font-family: 'Poppins', sans-serif;
+}
+
+.nav-brand {
+    flex-shrink: 0;
+    margin-right: 2rem;
 }
 
 .nav-brand a {
     color: #5e259b;
     text-decoration: none;
-    font-size: 1.5rem;
-    font-weight: bold;
+    font-size: 1.2rem;
+    font-weight: 600;
+    font-family: 'Poppins', sans-serif;
 }
 
 .nav-links {
@@ -32,9 +39,34 @@
     text-decoration: none;
     font-weight: 500;
     transition: color 0.3s ease;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    font-family: 'Poppins', sans-serif;
 }
 
 .nav-link:hover {
     color: #5e259b;
+}
+
+@media (max-width: 768px) {
+    .navbar
+    {
+        padding: 0 1rem;
+    }
+
+    .nav-brand
+    {
+        margin-right: 1rem;
+    }
+
+    .nav-links
+    {
+        gap: 1rem;
+    }
+
+    .nav-brand a
+    {
+        font-size: 1.1rem;
+    }
 }
 

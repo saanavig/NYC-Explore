@@ -1,8 +1,10 @@
 import './Navbar.css';
+
+import React, { useEffect, useState } from 'react';
+
 import { Link } from 'react-router-dom';
-import React, { useState, useEffect } from 'react';
-import { createClient } from '@supabase/supabase-js';
 import UserDropdown from './UserDropdown';
+import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
     import.meta.env.VITE_SUPABASE_URL,
@@ -13,12 +15,10 @@ const Navbar = () => {
     const [user, setUser] = useState(null);
 
     useEffect(() => {
-        // Get initial session
         supabase.auth.getSession().then(({ data: { session } }) => {
             setUser(session?.user ?? null);
         });
 
-        // Listen for auth changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             setUser(session?.user ?? null);
         });
