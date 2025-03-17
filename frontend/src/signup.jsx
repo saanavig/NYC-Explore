@@ -1,7 +1,13 @@
 import "./login.css";
 
 import { Link } from "react-router-dom";
+import { createClient } from '@supabase/supabase-js';
 import { useState } from "react";
+
+const supabase = createClient(
+    import.meta.env.VITE_SUPABASE_URL,
+    import.meta.env.VITE_SUPABASE_ANON_KEY
+);
 
 const Signup = () => {
     const [email, setEmail] = useState("");
@@ -43,9 +49,29 @@ const handleSubmit = (e) => {
     });
 };
 
-const handleGoogleSignup = () => {
-    window.location.href = "http://localhost:8000/auth/social/signup/google/";
+const handleGoogleSignup = async () => {
+    try {
+        console.log("Starting Google OAuth signup...");
+        const { data, error } = await supabase.auth.signInWithOAuth({
+            provider: "google",
+            options: {
+                redirectTo: 'http://localhost:5173',
+                skipBrowserRedirect: false
+            }
+        });
+
+        if (error) {
+            console.error("Supabase OAuth error:", error.message);
+            alert("Failed to sign in with Google. Try again.");
+        } else {
+            console.log("OAuth initiated:", data);
+        }
+    } catch (error) {
+        console.error("Error during Google signup:", error);
+        alert("Something went wrong.");
+    }
 };
+
 
 return (
     <div className="container">

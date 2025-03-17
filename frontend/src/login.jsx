@@ -1,7 +1,13 @@
 import "./login.css";
 
 import { Link } from "react-router-dom";
+import { createClient } from '@supabase/supabase-js';
 import { useState } from "react";
+
+const supabase = createClient(
+    import.meta.env.VITE_SUPABASE_URL,
+    import.meta.env.VITE_SUPABASE_ANON_KEY
+);
 
 const Login = () => {
     const [email, setEmail] = useState("");
@@ -32,15 +38,26 @@ const handleSubmit = (e) => {
     });
 };
 
-const handleGoogleLogin = () => {
-    fetch('http://localhost:5000/auth/google')
-        .then(response => response.json())
-        .then(data => {
-            window.location.href = data.url;
-        })
-        .catch(error => {
-            console.error('Error:', error);
+const handleGoogleLogin = async () => {
+    try {
+        console.log('Starting Google login...');
+        const { data, error } = await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+                redirectTo: 'http://localhost:5173'
+            }
         });
+
+        if (error) {
+            console.error('Google login error:', error);
+            throw error;
+        }
+
+        console.log('Google login response:', data);
+    } catch (error) {
+        console.error('Error during Google login:', error);
+        alert('Failed to sign in with Google. Please try again.');
+    }
 };
 
 return (
