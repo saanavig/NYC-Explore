@@ -41,9 +41,22 @@ def login():
             "email": data['email'],
             "password": data['password']
         })
-        return jsonify({"status": "success", "data": response}), 200
+
+        if response and "user" in response:
+            return jsonify({"status": "success", "data": response}), 200
+        else:
+            return jsonify({"status": "error", "message": "Invalid login credentials"}), 401
+
     except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 400
+        error_message = str(e)
+
+        if "User not found" in error_message or "Invalid login credentials" in error_message:
+            return jsonify({
+                "status": "error",
+                "message": "User not found. Please sign up first."
+            }), 404
+        return jsonify({"status": "error", "message": error_message}), 400
+
 
 # @app.route('/api/auth/google', methods=['GET'])
 # def google_auth():

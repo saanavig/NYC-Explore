@@ -1,5 +1,4 @@
 import './global.css';
-import './login.css';
 
 import App from './app';
 import React from 'react';
