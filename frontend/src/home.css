@@ -3,6 +3,7 @@
     max-width: 100%;
     margin-top: 64px;
     margin-left: 2rem;
+    font-family: 'Poppins', sans-serif;
 }
 
 h1 {
@@ -13,13 +14,13 @@ h1 {
 }
 
 .map-container {
-    flex: 1; /* Make it take equal space */
-    height: 100%; /* Full height of parent */
+    flex: 1;
+    height: 100%;
     border-radius: 12px;
     overflow: hidden;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     margin-left: 0;
-    min-width: 0; /* Prevent flex item from overflowing */
+    min-width: 0;
 }
 
 @media (max-width: 768px) {
@@ -38,19 +39,19 @@ h1 {
     display: flex;
     gap: 2rem;
     align-items: stretch;
-    height: calc(100vh - 64px - 2rem); /* Reduced padding subtraction */
-    margin-top: 0; /* Remove extra margin */
+    height: calc(100vh - 64px - 2rem);
+    margin-top: 0;
 }
 
 .places-list {
-    flex: 1; /* Make it take equal space */
-    height: 100%; /* Full height of parent */
+    flex: 1;
+    height: 100%;
     background: white;
     border-radius: 12px;
     padding: 1.5rem;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     overflow-y: auto;
-    min-width: 0; /* Prevent flex item from overflowing */
+    min-width: 0;
 }
 
 .places-list h2 {
@@ -102,7 +103,6 @@ h1 {
     font-size: 0.9rem;
     line-height: 1.5;
     margin-bottom: 0.75rem;
-    /* Add text truncation for long descriptions */
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
@@ -124,6 +124,123 @@ h1 {
     border: 1px solid #eee;
 }
 
+.places-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.add-button {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: #5e259b;
+    color: white;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s;
+    font-family: 'Poppins', sans-serif;
+}
+
+.add-button:hover {
+    background-color: #4a1d7a;
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    font-family: 'Poppins', sans-serif;
+}
+
+.modal h2 {
+    margin-bottom: 1.5rem;
+    color: #333;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #555;
+    font-family: 'Poppins', sans-serif;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-family: 'Poppins', sans-serif;
+}
+
+.form-group textarea {
+    height: 100px;
+    resize: vertical;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-buttons button {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-family: 'Poppins', sans-serif;
+}
+
+.modal-buttons button[type="submit"] {
+    background-color: #5e259b;
+    color: white;
+}
+
+.modal-buttons button[type="submit"]:hover {
+    background-color: #4a1d7a;
+}
+
+.modal-buttons button[type="button"] {
+    background-color: #f0f0f0;
+    color: #333;
+}
+
+.modal-buttons button[type="button"]:hover {
+    background-color: #e0e0e0;
+}
+
 @media (max-width: 1024px) {
     .page-layout {
         flex-direction: column;
@@ -134,11 +251,10 @@ h1 {
     .map-container,
     .places-list {
         width: 100%;
-        height: calc((100vh - 64px - 3rem) / 2); /* Equal heights on mobile */
+        height: calc((100vh - 64px - 3rem) / 2);
     }
 }
 
-/* Update mobile styles */
 @media (max-width: 640px) {
     .place-card {
         flex-direction: column;
