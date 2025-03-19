@@ -20,14 +20,14 @@ const Homepage = () => {
         name: '',
         location: '',
         description: '',
-        time: '',
+        event_hours: '',
         cost: '',
         image: null
     });
     const apiKey = import.meta.env.VITE_MAPS_KEY;
 
     useEffect(() => {
-        fetch("http://127.0.0.1:5000/places")
+        fetch("http://127.0.0.1:5000/events")
             .then(response => response.json())
             .then(data => {
                 if (data.status === "success") {
@@ -61,10 +61,9 @@ const Homepage = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log('Submitting:', newPlace); // Debug log
-
+        console.log('Submitting:', newPlace);
         try {
-            const response = await fetch("http://127.0.0.1:5000/places", {
+            const response = await fetch("http://127.0.0.1:5000/events", {
                 method: "POST",
                 headers: { 
                     "Content-Type": "application/json",
@@ -74,11 +73,9 @@ const Homepage = () => {
                     name: newPlace.name,
                     location: newPlace.location,
                     description: newPlace.description,
-                    time: newPlace.time,
+                    event_hours: newPlace.event_hours,
                     cost: newPlace.cost,
-                    image: newPlace.image,
-                    lat: center.lat,
-                    lng: center.lng
+                    image: newPlace.image
                 })
             });
 
@@ -92,7 +89,7 @@ const Homepage = () => {
                     name: '',
                     location: '',
                     description: '',
-                    time: '',
+                    event_hours: '',
                     cost: '',
                     image: null
                 });
@@ -143,7 +140,7 @@ const Homepage = () => {
                                     <p className="location">{place.location}</p>
                                     <p className="description">{place.description}</p>
                                     <div className="additional-info">
-                                        <span>🕒 {place.time}</span>
+                                        <span>🕒 {place.event_hours}</span>
                                         <span>🎫 {place.cost}</span>
                                     </div>
                                 </div>

@@ -80,21 +80,21 @@ def google_auth():
         print(f"Error in google_auth: {str(e)}")
         return jsonify({"status": "error", "message": str(e)}), 400
 
-@app.route('/places', methods=['GET'])
+@app.route('/events', methods=['GET'])
 def get_places():
     try:
-        response = supabase.table("places").select("*").execute()
+        response = supabase.table("events").select("*").execute()
         return jsonify({"status": "success", "data": response.data}), 200
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
-
-@app.route('/places', methods=['POST'])
-def add_place():
+    
+@app.route('/events', methods=['POST'])
+def add_event():
     try:
         data = request.json
         print("Received data:", data)
 
-        required_fields = ['name', 'location', 'description', 'time', 'cost']
+        required_fields = ['name', 'location', 'description', 'event_hours', 'cost']
         for field in required_fields:
             if field not in data:
                 return jsonify({
@@ -102,15 +102,13 @@ def add_place():
                     "message": f"Missing required field: {field}"
                 }), 400
 
-        response = supabase.table("places").insert({
+        response = supabase.table("events").insert({
             "name": data['name'],
             "location": data['location'],
             "description": data['description'],
-            "time": data['time'],
+            "event_hours": data['event_hours'],
             "cost": data['cost'],
-            "image": data.get('image'),
-            "lat": data.get('lat', 40.7128),
-            "lng": data.get('lng', -74.006)
+            "image_url": data.get('image'),
         }).execute()
 
         print("Database response:", response)
