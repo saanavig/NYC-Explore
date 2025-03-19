@@ -168,8 +168,8 @@ const Homepage = () => {
                                 <textarea id="description" name="description" value={newPlace.description} onChange={handleInputChange} required />
                             </div>
                             <div className="form-group">
-                                <label htmlFor="time">Event Hours:</label>
-                                <input type="text" id="time" name="time" value={newPlace.time} onChange={handleInputChange} required />
+                                <label htmlFor="event-hours">Event Hours:</label>
+                                <input type="text" id="event-hours" name="event_hours" value={newPlace.event_hours} onChange={handleInputChange} required />
                             </div>
                             <div className="form-group">
                                 <label htmlFor="cost">Cost:</label>
