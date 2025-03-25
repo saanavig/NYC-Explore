@@ -137,7 +137,7 @@ const Homepage = () => {
                                 )}
                                 <div className="place-details">
                                     <h3>{place.name}</h3>
-                                    <p className="location">{place.location}</p>
+                                    <p className="location">{place.location !== "Unknown" ? place.location : "Location TBD"}</p>
                                     <p className="description">{place.description}</p>
                                     <div className="additional-info">
                                         <span>🕒 {place.event_hours}</span>

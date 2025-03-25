@@ -3,6 +3,8 @@ from supabase import create_client
 import os
 from flask_cors import CORS
 from dotenv import load_dotenv
+import requests
+
 
 app = Flask(__name__)
 CORS(app)
@@ -12,6 +14,9 @@ supabase = create_client(
     os.getenv("SUPABASE_URL"),
     os.getenv("SUPABASE_KEY")
 )
+
+eventbrite_key = os.getenv("EVENTBRITE_KEY")
+eventbrite_url = "https://www.eventbriteapi.com/v3/"
 
 @app.route('/')
 def home():
@@ -81,13 +86,28 @@ def google_auth():
         return jsonify({"status": "error", "message": str(e)}), 400
 
 @app.route('/events', methods=['GET'])
-def get_places():
-    try:
-        response = supabase.table("events").select("*").execute()
-        return jsonify({"status": "success", "data": response.data}), 200
-    except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
-    
+def get_events():
+    location = request.args.get('location', 'New York')
+    category = request.args.get('category', '')
+    url = f"{eventbrite_url}events/search/"
+
+    headers = {
+        "Authorization": f"Bearer {eventbrite_key}"
+    }
+
+    params = {
+        "location.address": location,
+        "categories": category,
+        "expand": "venue"
+    }
+
+    response = requests.get(url, headers=headers, params=params)
+
+    if response.status_code == 200:
+        return jsonify(response.json())
+    else:
+        return jsonify({"error": "Failed to fetch events"}), response.status_code
+
 @app.route('/events', methods=['POST'])
 def add_event():
     try:
