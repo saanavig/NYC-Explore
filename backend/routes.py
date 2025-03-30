@@ -14,7 +14,7 @@ supabase = create_client(
     os.getenv("SUPABASE_URL"),
     os.getenv("SUPABASE_KEY")
 )
-
+google_maps_key = os.getenv("GOOGLE_MAPS_API_KEY")
 eventbrite_key = os.getenv("EVENTBRITE_KEY")
 eventbrite_url = "https://www.eventbriteapi.com/v3/"
 
@@ -85,28 +85,41 @@ def google_auth():
         print(f"Error in google_auth: {str(e)}")
         return jsonify({"status": "error", "message": str(e)}), 400
 
+def get_lat_lng(address):
+
+    geocode_url = f"https://maps.googleapis.com/maps/api/geocode/json?address={address}&key={google_maps_key}"
+
+    response = requests.get(geocode_url)
+    data = response.json()
+
+    if data['status'] == 'OK':
+        location = data['results'][0]['geometry']['location']
+        return location['lat'], location['lng']
+    else:
+        return None, None
+
 @app.route('/events', methods=['GET'])
 def get_events():
-    location = request.args.get('location', 'New York')
-    category = request.args.get('category', '')
-    url = f"{eventbrite_url}events/search/"
+    try:
+        response = supabase.table("events").select("*").execute()
 
-    headers = {
-        "Authorization": f"Bearer {eventbrite_key}"
-    }
+        if response.data:
+            return jsonify({
+                "status": "success",
+                "data": response.data
+            }), 200
+        else:
+            return jsonify({
+                "status": "success",
+                "data": []
+            }), 200
 
-    params = {
-        "location.address": location,
-        "categories": category,
-        "expand": "venue"
-    }
-
-    response = requests.get(url, headers=headers, params=params)
-
-    if response.status_code == 200:
-        return jsonify(response.json())
-    else:
-        return jsonify({"error": "Failed to fetch events"}), response.status_code
+    except Exception as e:
+        print(f"Error fetching events: {str(e)}")
+        return jsonify({
+            "status": "error",
+            "message": "Failed to fetch events"
+        }), 500
 
 @app.route('/events', methods=['POST'])
 def add_event():
@@ -122,9 +135,16 @@ def add_event():
                     "message": f"Missing required field: {field}"
                 }), 400
 
+        lat, lng = get_lat_lng(data['location'])
+
+        if lat is None or lng is None:
+            return jsonify({"status": "error", "message": "Invalid address"}), 400
+
         response = supabase.table("events").insert({
             "name": data['name'],
             "location": data['location'],
+            "latitude": lat,
+            "longitude": lng,
             "description": data['description'],
             "event_hours": data['event_hours'],
             "cost": data['cost'],
