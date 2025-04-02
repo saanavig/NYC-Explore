@@ -3,6 +3,8 @@ import "./home.css";
 import { Autocomplete, GoogleMap, InfoWindow, LoadScript, Marker } from "@react-google-maps/api";
 import React, { useEffect, useRef, useState } from "react";
 
+import { use } from "react";
+
 const mapContainerStyle = {
     width: "100%",
     height: "100%",
@@ -13,6 +15,9 @@ const Homepage = () => {
         lat: 40.7128,
         lng: -74.006
     });
+
+    //search bar
+    const [searchTerm, setSearchTerm] = useState('');
 
     const [places, setPlaces] = useState([]);
     const [showModal, setShowModal] = useState(false);
@@ -30,6 +35,12 @@ const Homepage = () => {
     
     const apiKey = import.meta.env.VITE_MAPS_KEY;
     const autocompleteRef = useRef(null);
+
+    const filteredPlaces = places.filter(place => 
+        place.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        place.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        place.location.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     useEffect(() => {
         fetch("http://127.0.0.1:5000/events")
@@ -175,10 +186,22 @@ const Homepage = () => {
                         </div>
                         <div className="places-list">
                             <div className="places-header">
-                                <h2>Places to Visit</h2>
-                                <button className="add-button" onClick={() => setShowModal(true)}>+</button>
+                                <div className="header-top">
+                                    <h2>Places to Visit</h2>
+                                    <button className="add-button" onClick={() => setShowModal(true)}>+</button>
+                                </div>
+                                <div className="search-bar">
+                                    <input
+                                        type="text"
+                                        placeholder="Search For Events Nearby"
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                    />
+                                    <button className="search-button" onClick={() => setSearchTerm('')}>X</button>
+                                </div>
                             </div>
-                            {places.map((place) => (
+
+                            {filteredPlaces.map((place) => (
                                 <div className="place-card" key={place.id}>
                                     {place.image ? (
                                         <div className="place-image">
