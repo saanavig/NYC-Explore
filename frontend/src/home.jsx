@@ -33,6 +33,9 @@ const Homepage = () => {
     const [map, setMap] = useState(null);
     const [selectedPlace, setSelectedPlace] = useState(null);
 
+    const [sortBy, setSortBy] = useState('none');
+    const [showSortOptions, setShowSortOptions] = useState(false);
+
     const apiKey = import.meta.env.VITE_MAPS_KEY;
     const autocompleteRef = useRef(null);
 
@@ -41,6 +44,31 @@ const Homepage = () => {
         place.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
         place.location.toLowerCase().includes(searchTerm.toLowerCase())
     );
+
+    //todo: create sorting -- date, cost
+    const getSortedPlaces = (places) => {
+        const sortedPlaces = [...places];
+        
+        const extractCost = (cost) => {
+            if (!cost) return 0;
+            const matches = cost.toString().match(/\d+(\.\d+)?/);
+            return matches ? parseFloat(matches[0]) : 0;
+        };
+
+        switch (sortBy) {
+            case 'dateAsc':
+                return sortedPlaces.sort((a, b) => new Date(a.event_date || 0) - new Date(b.event_date || 0));
+            case 'dateDesc':
+                return sortedPlaces.sort((a, b) => new Date(b.event_date || 0) - new Date(a.event_date || 0));
+            case 'costAsc':
+                return sortedPlaces.sort((a, b) => extractCost(a.cost) - extractCost(b.cost));
+            case 'costDesc':
+                return sortedPlaces.sort((a, b) => extractCost(b.cost) - extractCost(a.cost));
+            case 'none':
+            default:
+                return sortedPlaces;
+        }
+    };
 
     useEffect(() => {
         fetch("http://127.0.0.1:5000/events")
@@ -204,13 +232,35 @@ const Homepage = () => {
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
                                     />
-                                    <button className="filter-button" onClick={() => console.log('Filter clicked')}>
-                                        <span>☰</span>
-                                    </button>
+                                    <div className="sort-container">
+                                        <button 
+                                            className="filter-button" 
+                                            onClick={() => setShowSortOptions(!showSortOptions)}
+                                        >
+                                            <span>☰</span>
+                                        </button>
+                                        {showSortOptions && (
+                                            <div className="sort-dropdown">
+                                                <select 
+                                                    value={sortBy} 
+                                                    onChange={(e) => {
+                                                        setSortBy(e.target.value);
+                                                        setShowSortOptions(false);
+                                                    }}
+                                                >
+                                                    <option value="none">Sort By</option>
+                                                    <option value="dateAsc">Date: Upcoming Events</option>
+                                                    <option value="dateDesc">Date: Later Events First</option>
+                                                    <option value="costAsc">Price: Low to High</option>
+                                                    <option value="costDesc">Price: High to Low</option>
+                                                </select>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
 
-                            {filteredPlaces.map((place) => (
+                            {getSortedPlaces(filteredPlaces).map((place) => (
                                 <div className="place-card" key={place.id}>
                                     {place.image ? (
                                         <div className="place-image">
