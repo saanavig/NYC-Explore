@@ -127,7 +127,7 @@ def add_event():
         data = request.json
         print("Received data:", data)
 
-        required_fields = ['name', 'location', 'description', 'event_hours', 'cost']
+        required_fields = ['name', 'location', 'description', 'event_hours', 'cost', 'event_date']
         for field in required_fields:
             if field not in data:
                 return jsonify({
@@ -149,6 +149,7 @@ def add_event():
             "event_hours": data['event_hours'],
             "cost": data['cost'],
             "image_url": data.get('image'),
+            "event_date": data['event_date']
         }).execute()
 
         print("Database response:", response)

@@ -32,11 +32,11 @@ const Homepage = () => {
 
     const [map, setMap] = useState(null);
     const [selectedPlace, setSelectedPlace] = useState(null);
-    
+
     const apiKey = import.meta.env.VITE_MAPS_KEY;
     const autocompleteRef = useRef(null);
 
-    const filteredPlaces = places.filter(place => 
+    const filteredPlaces = places.filter(place =>
         place.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         place.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
         place.location.toLowerCase().includes(searchTerm.toLowerCase())
@@ -110,7 +110,8 @@ const Homepage = () => {
                     cost: newPlace.cost,
                     image: newPlace.image,
                     lat: newPlace.lat,
-                    lng: newPlace.lng
+                    lng: newPlace.lng,
+                    event_date: newPlace.event_date
                 })
             });
 
@@ -124,6 +125,7 @@ const Homepage = () => {
                     name: '',
                     location: '',
                     description: '',
+                    event_date: '',
                     event_hours: '',
                     cost: '',
                     image: null
@@ -176,8 +178,13 @@ const Homepage = () => {
                                         <div style={{ padding: "10px", maxWidth: "250px" }}>
                                             <h3 style={{ margin: "5px 0" }}>{selectedPlace.name}</h3>
                                             <p><strong>Location:</strong> {selectedPlace.location}</p>
-                                            <p><strong>Description:</strong> {selectedPlace.description}</p>
+                                            <p><strong>Event Date:</strong> {new Date(selectedPlace.event_date).toLocaleDateString("en-US", {
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric',
+                                            })}</p>
                                             <p><strong>Event Hours:</strong> {selectedPlace.event_hours}</p>
+                                            <p><strong>Description:</strong> {selectedPlace.description}</p>
                                             <p><strong>Cost:</strong> {selectedPlace.cost}</p>
                                         </div>
                                     </InfoWindow>
@@ -197,7 +204,9 @@ const Homepage = () => {
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
                                     />
-                                    <button className="search-button" onClick={() => setSearchTerm('')}>X</button>
+                                    <button className="filter-button" onClick={() => console.log('Filter clicked')}>
+                                        <span>☰</span>
+                                    </button>
                                 </div>
                             </div>
 
@@ -217,6 +226,11 @@ const Homepage = () => {
                                         <p className="location">{place.location}</p>
                                         <p className="description">{place.description}</p>
                                         <div className="additional-info">
+                                        <span>📅 {new Date(place.event_date).toLocaleDateString("en-US", {
+                                            year: 'numeric',
+                                            month: 'long',
+                                            day: 'numeric',
+                                        })}</span>
                                             <span>🕒 {place.event_hours}</span>
                                             <span>🎫 {place.cost}</span>
                                         </div>
@@ -257,10 +271,17 @@ const Homepage = () => {
                                     <label htmlFor="description">Description:</label>
                                     <textarea id="description" name="description" value={newPlace.description} onChange={handleInputChange} required />
                                 </div>
+
+                                <div className="form-group">
+                                    <label htmlFor="event-date">Event Date:</label>
+                                    <input type="date" id="event-date" name="event_date" value={newPlace.event_date} onChange={handleInputChange} required />
+                                </div>
+
                                 <div className="form-group">
                                     <label htmlFor="event-hours">Event Hours:</label>
                                     <input type="text" id="event-hours" name="event_hours" value={newPlace.event_hours} onChange={handleInputChange} required />
                                 </div>
+
                                 <div className="form-group">
                                     <label htmlFor="cost">Cost:</label>
                                     <input type="text" id="cost" name="cost" value={newPlace.cost} onChange={handleInputChange} required />
