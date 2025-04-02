@@ -1,6 +1,6 @@
 import "./home.css";
 
-import { Autocomplete, GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
+import { Autocomplete, GoogleMap, InfoWindow, LoadScript, Marker } from "@react-google-maps/api";
 import React, { useEffect, useRef, useState } from "react";
 
 const mapContainerStyle = {
@@ -25,6 +25,9 @@ const Homepage = () => {
         image: null
     });
 
+    const [map, setMap] = useState(null);
+    const [selectedPlace, setSelectedPlace] = useState(null);
+    
     const apiKey = import.meta.env.VITE_MAPS_KEY;
     const autocompleteRef = useRef(null);
 
@@ -135,25 +138,39 @@ const Homepage = () => {
                         <div className="map-container">
                             <GoogleMap mapContainerStyle={mapContainerStyle} center={mapCenter} zoom={12}>
                                 {console.log("Places data:", places)}
-                                {/* {places.map((place, index) => {
-                                    if (place.lat && place.lng) {
-                                        return <Marker key={index} position={{ lat: Number(place.lat), lng: Number(place.lng) }} />;
+
+                                {places.map((place, index) => {
+                                    if (place.latitude && place.longitude) {
+                                        const markerPosition = { lat: Number(place.latitude), lng: Number(place.longitude) };
+                                        return (
+                                            <Marker
+                                                key={`${place.name}-${index}`}
+                                                position={markerPosition}
+                                                icon={{
+                                                    url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
+                                                    scaledSize: new window.google.maps.Size(40, 40),
+                                                }}
+                                                onClick={() => setSelectedPlace(place)}
+                                            />
+                                        );
                                     }
                                     return null;
-                                })} */}
-                                {places.map((place, index) => (
-                                    console.log(`Placing marker at: ${place.latitude}, ${place.longitude}`),
-                                    place.latitude && place.longitude ? (
-                                        <Marker
-                                            key={`${place.name}-${index}`}
-                                            position={{ lat: Number(place.latitude), lng: Number(place.longitude) }}
-                                            icon={{
-                                                url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
-                                                scaledSize: new window.google.maps.Size(40, 40),
-                                            }}
-                                        />
-                                    ) : null
-                                ))}
+                                })}
+
+                                {selectedPlace && (
+                                    <InfoWindow
+                                        position={{ lat: Number(selectedPlace.latitude), lng: Number(selectedPlace.longitude) }}
+                                        onCloseClick={() => setSelectedPlace(null)}
+                                    >
+                                        <div style={{ padding: "10px", maxWidth: "250px" }}>
+                                            <h3 style={{ margin: "5px 0" }}>{selectedPlace.name}</h3>
+                                            <p><strong>Location:</strong> {selectedPlace.location}</p>
+                                            <p><strong>Description:</strong> {selectedPlace.description}</p>
+                                            <p><strong>Event Hours:</strong> {selectedPlace.event_hours}</p>
+                                            <p><strong>Cost:</strong> {selectedPlace.cost}</p>
+                                        </div>
+                                    </InfoWindow>
+                                )}
                             </GoogleMap>
                         </div>
                         <div className="places-list">
