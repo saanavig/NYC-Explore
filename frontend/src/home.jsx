@@ -8,12 +8,12 @@ const mapContainerStyle = {
     height: "100%",
 };
 
-const center = {
-    lat: 40.7128,
-    lng: -74.006,
-};
-
 const Homepage = () => {
+    const [mapCenter, setMapCenter] = useState({
+        lat: 40.7128,
+        lng: -74.006
+    });
+
     const [places, setPlaces] = useState([]);
     const [showModal, setShowModal] = useState(false);
     const [newPlace, setNewPlace] = useState({
@@ -38,6 +38,11 @@ const Homepage = () => {
             })
             .catch(error => console.error("Error fetching places:", error));
     }, []);
+
+    //checking if the places are being fetched correctly with lng/lat
+    useEffect(() => {
+        console.log("Rendering markers for:", places);
+    }, [places]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -89,7 +94,9 @@ const Homepage = () => {
                     description: newPlace.description,
                     event_hours: newPlace.event_hours,
                     cost: newPlace.cost,
-                    image: newPlace.image
+                    image: newPlace.image,
+                    lat: newPlace.lat,
+                    lng: newPlace.lng
                 })
             });
 
@@ -126,9 +133,26 @@ const Homepage = () => {
                 <div className="content-wrapper">
                     <div className="page-layout">
                         <div className="map-container">
-                            <GoogleMap mapContainerStyle={mapContainerStyle} center={center} zoom={12}>
+                            <GoogleMap mapContainerStyle={mapContainerStyle} center={mapCenter} zoom={12}>
+                                {console.log("Places data:", places)}
+                                {/* {places.map((place, index) => {
+                                    if (place.lat && place.lng) {
+                                        return <Marker key={index} position={{ lat: Number(place.lat), lng: Number(place.lng) }} />;
+                                    }
+                                    return null;
+                                })} */}
                                 {places.map((place, index) => (
-                                    <Marker key={index} position={{ lat: parseFloat(place.lat), lng: parseFloat(place.lng) }} />
+                                    console.log(`Placing marker at: ${place.latitude}, ${place.longitude}`),
+                                    place.latitude && place.longitude ? (
+                                        <Marker
+                                            key={`${place.name}-${index}`}
+                                            position={{ lat: Number(place.latitude), lng: Number(place.longitude) }}
+                                            icon={{
+                                                url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
+                                                scaledSize: new window.google.maps.Size(40, 40),
+                                            }}
+                                        />
+                                    ) : null
                                 ))}
                             </GoogleMap>
                         </div>
@@ -174,8 +198,8 @@ const Homepage = () => {
                                 </div>
                                 <div className="form-group">
                                     <label htmlFor="location">Location:</label>
-                                    <Autocomplete 
-                                        onLoad={(auto) => (autocompleteRef.current = auto)} 
+                                    <Autocomplete
+                                        onLoad={(auto) => (autocompleteRef.current = auto)}
                                         onPlaceChanged={handlePlaceSelect}
                                     >
                                         <input
