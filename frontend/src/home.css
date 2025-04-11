@@ -446,3 +446,35 @@ h1 {
     background: #4a1d7a;
     color: white;
 }
+
+/* heatmap widget */
+
+.heatmap-filter-widget {
+    position: absolute;
+    bottom: 15px;
+    left: 15px;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 1rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.9rem;
+    z-index: 9999;
+    width: 220px;
+}
+
+.heatmap-filter-widget label {
+    display: block;
+    margin-bottom: 0.4rem;
+    cursor: pointer;
+}
+
+.heatmap-filter-widget input[type="checkbox"] {
+    margin-right: 0.5rem;
+}
+
+.heatmap-filter-widget hr {
+    margin: 0.75rem 0;
+    border: none;
+    border-top: 1px solid #ddd;
+}

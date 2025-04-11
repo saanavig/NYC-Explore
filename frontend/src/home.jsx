@@ -43,6 +43,8 @@ const Homepage = () => {
     const [heatmapLayer, setHeatmapLayer] = useState(null);
     const [heatmapData, setHeatmapData] = useState([]);
 
+    //HERE: edit as more layers are added
+    const [activeLayers, setActiveLayers] = useState(["mta"]);
 
     const apiKey = import.meta.env.VITE_MAPS_KEY;
     const autocompleteRef = useRef(null);
@@ -102,6 +104,23 @@ const Homepage = () => {
         }));
     };
 
+    const toggleLayer = (layer) => {
+        setActiveLayers((prev) =>
+            prev.includes(layer)
+            ? prev.filter((l) => l !== layer)
+            : [...prev, layer]
+        );
+    };
+
+    const [layerData, setLayerData] = useState({
+        mta: [],
+        pedestrian: [],
+        traffic: [],
+        bicycle: [],
+        sound: [],
+    });
+
+
     //heatmap useeffect
     useEffect(() => {
         fetch("http://127.0.0.1:5000/mta")
@@ -128,7 +147,8 @@ const Homepage = () => {
                 });
 
                 console.log("Heatmap points:", allLatLngs.length);
-                setHeatmapData(allLatLngs);
+                setLayerData(prev => ({ ...prev, mta: allLatLngs }));
+
             })
 
         .catch(err => console.error("Error fetching /mta:", err));
@@ -136,8 +156,8 @@ const Homepage = () => {
 
     //custom heatmap for mta
     const customGradient = [
-        "rgba(0, 31, 63, 0.1)",   // light navy
-        "rgba(63, 81, 181, 0.3)", // soft indigo
+        "rgba(0, 31, 63, 0.1)",
+        "rgba(63, 81, 181, 0.3)",
         "rgba(103, 58, 183, 0.4)",
         "rgba(156, 39, 176, 0.5)",
         "rgba(224, 64, 251, 0.6)"
@@ -145,29 +165,45 @@ const Homepage = () => {
 
 
     //clear heatmap
-    useEffect(() =>
-    {
-            if (!map) return;
-            if (mapMode === "heatmap")
+    useEffect(() => {
+
+        if (!map) return;
+        const combined = [];
+
+        activeLayers.forEach((layer) => {
+            if (Array.isArray(layerData[layer])) 
             {
-                const newLayer = new window.google.maps.visualization.HeatmapLayer({
-                    data: heatmapData,
-                    map: map,
-                    radius: 12,
-                    opacity: 0.6,
-                    gradient: customGradient,
-                });
-                setHeatmapLayer(newLayer);
+                combined.push(...layerData[layer]);
             }
-            else
+        });
+
+        if (mapMode === "heatmap") 
+        {
+            const newLayer = new window.google.maps.visualization.HeatmapLayer({
+                data: combined,
+                map: map,
+                radius: 20,
+                opacity: 0.6,
+                gradient: customGradient,
+            });
+
+            setHeatmapLayer((oldLayer) => {
+
+                if (oldLayer) oldLayer.setMap(null);
+                    return newLayer;
+            });
+        }
+
+        else
+        {
+            if (heatmapLayer)
             {
-                if (heatmapLayer)
-                {
-                    heatmapLayer.setMap(null);
-                    setHeatmapLayer(null);
-                }
+                heatmapLayer.setMap(null);
+                setHeatmapLayer(null);
             }
-    }, [mapMode, map, heatmapData]);
+        }
+    }, [mapMode, map, activeLayers, layerData]);
+
 
     const handlePlaceSelect = () => {
         const place = autocompleteRef.current.getPlace();
@@ -282,6 +318,54 @@ const Homepage = () => {
                                     Heatmaps
                                 </button>
                             </div>
+
+                            {/* filter for heatmapp */}
+                            <div className="heatmap-filter-widget">
+                                <label>
+                                    <input
+                                    type="checkbox"
+                                    checked={activeLayers.includes("mta")}
+                                    onChange={() => toggleLayer("mta")}
+                                    />
+                                    MTA Transit
+                                </label>
+
+                                <label>
+                                    <input
+                                    type="checkbox"
+                                    checked={activeLayers.includes("311")}
+                                    onChange={() => toggleLayer("311")}
+                                    />
+                                    Ambience Sound 
+                                </label>
+
+                                <label>
+                                    <input
+                                    type="checkbox"
+                                    checked={activeLayers.includes("pedestrian")}
+                                    onChange={() => toggleLayer("pedestrian")}
+                                    />
+                                    Pedestrian Counts
+                                </label>
+                                <label>
+                                    <input
+                                    type="checkbox"
+                                    checked={activeLayers.includes("bicycle")}
+                                    onChange={() => toggleLayer("bicycle")}
+                                    />
+                                    Bicycle Traffic
+                                </label>
+
+                                <label>
+                                    <input
+                                    type="checkbox"
+                                    checked={activeLayers.includes("traffic")}
+                                    onChange={() => toggleLayer("traffic")}
+                                    />
+                                    Vehicle Flow
+                                </label>
+                            </div>
+
 
                             <GoogleMap mapContainerStyle={mapContainerStyle} center={mapCenter} zoom={12} onLoad={(mapInstance) => setMap(mapInstance)}>
                                 {console.log("Places data:", places)}
