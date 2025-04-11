@@ -280,6 +280,7 @@ def get_311():
                     "created_date": item.get("created_date")
                 })
 
+        print(f"Returning {len(results)} sound points")
         return jsonify(results)
 
     except Exception as e:
