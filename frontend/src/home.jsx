@@ -39,6 +39,10 @@ const Homepage = () => {
     const [mapMode, setMapMode] = useState('events');
     const [markerRefs, setMarkerRefs] = useState([]);
 
+    // heatmap
+    const [heatmapLayer, setHeatmapLayer] = useState(null);
+    const [heatmapData, setHeatmapData] = useState([]);
+
 
     const apiKey = import.meta.env.VITE_MAPS_KEY;
     const autocompleteRef = useRef(null);
@@ -98,6 +102,73 @@ const Homepage = () => {
         }));
     };
 
+    //heatmap useeffect
+    useEffect(() => {
+        fetch("http://127.0.0.1:5000/mta")
+            .then(res => res.json())
+            .then(data => {
+                console.log("cheecking /mta raw data:", data);
+
+                const allLatLngs = [];
+
+                Object.entries(data).forEach(([key, list]) =>
+                {
+                    if (Array.isArray(list)) {
+                        list.forEach(item => {
+                        console.log("Item:", item)
+
+                            if (item.latitude && item.longitude) 
+                            {
+                                allLatLngs.push(
+                                new window.google.maps.LatLng(item.latitude, item.longitude)
+                                );
+                            }
+                        });
+                    }
+                });
+
+                console.log("Heatmap points:", allLatLngs.length);
+                setHeatmapData(allLatLngs);
+            })
+
+        .catch(err => console.error("Error fetching /mta:", err));
+    }, []);
+
+    //custom heatmap for mta
+    const customGradient = [
+        "rgba(0, 31, 63, 0.1)",   // light navy
+        "rgba(63, 81, 181, 0.3)", // soft indigo
+        "rgba(103, 58, 183, 0.4)",
+        "rgba(156, 39, 176, 0.5)",
+        "rgba(224, 64, 251, 0.6)"
+    ];
+
+
+    //clear heatmap
+    useEffect(() =>
+    {
+            if (!map) return;
+            if (mapMode === "heatmap")
+            {
+                const newLayer = new window.google.maps.visualization.HeatmapLayer({
+                    data: heatmapData,
+                    map: map,
+                    radius: 12,
+                    opacity: 0.6,
+                    gradient: customGradient,
+                });
+                setHeatmapLayer(newLayer);
+            }
+            else
+            {
+                if (heatmapLayer)
+                {
+                    heatmapLayer.setMap(null);
+                    setHeatmapLayer(null);
+                }
+            }
+    }, [mapMode, map, heatmapData]);
+
     const handlePlaceSelect = () => {
         const place = autocompleteRef.current.getPlace();
         if (place && place.formatted_address) {
@@ -126,7 +197,7 @@ const Homepage = () => {
 
     useEffect(() =>
     {
-        if (mapMode === "heatmap") 
+        if (mapMode === "heatmap")
         {
             markerRefs.forEach(marker => marker.setMap(null));
         }
@@ -188,7 +259,8 @@ const Homepage = () => {
     };
 
     return (
-        <LoadScript googleMapsApiKey={apiKey} libraries={["places"]}>
+        <LoadScript googleMapsApiKey={apiKey} libraries={["places", "visualization"]}>
+
             <div className="container">
                 <div className="content-wrapper">
                     <div className="page-layout">
@@ -211,7 +283,7 @@ const Homepage = () => {
                                 </button>
                             </div>
 
-                            <GoogleMap mapContainerStyle={mapContainerStyle} center={mapCenter} zoom={12}>
+                            <GoogleMap mapContainerStyle={mapContainerStyle} center={mapCenter} zoom={12} onLoad={(mapInstance) => setMap(mapInstance)}>
                                 {console.log("Places data:", places)}
 
                                 {mapMode === "events" && places.map((place, index) => {

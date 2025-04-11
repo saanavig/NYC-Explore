@@ -4,6 +4,7 @@ import os
 from flask_cors import CORS
 from dotenv import load_dotenv
 import requests
+import json
 from google.transit import gtfs_realtime_pb2
 
 
@@ -170,55 +171,85 @@ def add_event():
 
 # https://api.mta.info/#/subwayRealTimeFeeds
 
-#subway enpoints
-subway_endpoints = {
-    "blue":"https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-ace",
-    "green": "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-g",
-    "yellow": "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-nqrw",
-    "red_purple": "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs",
-    "orange": "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-bdfm",
-    "brown": "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-jz",
-    "gray": "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-l",
-    "sir": "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-si"
-}
+# #subway enpoints
+# subway_endpoints = {
+#     "blue":"https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-ace",
+#     "green": "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-g",
+#     "yellow": "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-nqrw",
+#     "red_purple": "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs",
+#     "orange": "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-bdfm",
+#     "brown": "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-jz",
+#     "gray": "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-l",
+#     "sir": "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-si"
+# }
 
-def get_mta(line):
-    url = subway_endpoints.get(line)
-    if not url:
-        return {"error": f"Endpoint for {line} not found."}
+# def get_mta(line):
+#     url = subway_endpoints.get(line)
+#     if not url:
+#         return []
 
-    try:
-        response = requests.get(url)
-        print(f"Status code for {line}: {response.status_code}")
+#     try:
+#         response = requests.get(url)
 
-        if response.status_code == 200:
-            feed = gtfs_realtime_pb2.FeedMessage()
-            feed.ParseFromString(response.content)
-            print("Parsed feed successfully")
+#         if response.status_code == 200:
+#             feed = gtfs_realtime_pb2.FeedMessage()
+#             feed.ParseFromString(response.content)
 
-            entity_data = []
-            for entity in feed.entity:
-                if entity.HasField("trip_update") or entity.HasField("vehicle"):
-                    entity_data.append({
-                        "id": entity.id,
-                        "trip_id": entity.trip_update.trip.trip_id if entity.HasField("trip_update") else None,
-                        "vehicle_id": entity.vehicle.vehicle.id if entity.HasField("vehicle") else None,
-                        "timestamp": entity.vehicle.timestamp if entity.HasField("vehicle") else None
-                    })
-            return entity_data
-        else:
-            return {"error": f"Failed to fetch data for {line}", "status_code": response.status_code}
+#             entity_data = []
+#             for entity in feed.entity:
+#                 if entity.HasField("vehicle") and entity.vehicle.HasField("position"):
+#                     lat = entity.vehicle.position.latitude
+#                     lon = entity.vehicle.position.longitude
 
-    except requests.exceptions.RequestException as e:
-        return {"error": f"Request for {line} failed: {str(e)}"}
+#                     if lat != 0.0 and lon != 0.0:
+#                         entity_data.append({
+#                             "id": entity.id,
+#                             "trip_id": entity.vehicle.trip.trip_id if entity.vehicle.HasField("trip") else None,
+#                             "vehicle_id": entity.vehicle.vehicle.id if entity.vehicle.HasField("vehicle") else None,
+#                             "timestamp": entity.vehicle.timestamp if entity.vehicle.HasField("timestamp") else None,
+#                             "latitude": lat,
+#                             "longitude": lon
+#                         })
+#             return entity_data
+#         else:
+#             return []
 
+#     except Exception as e:
+#         print(f"Error for {line}: {str(e)}")
+#         return []
 
 @app.route('/mta', methods=['GET'])
 def get_data():
     mta_data = {}
 
-    for line in subway_endpoints:
-        mta_data[line] = get_mta(line)
+    # for line in subway_endpoints:
+    #     mta_data[line] = get_mta(line)
+
+    try:
+        bus_response = requests.get(
+            "https://bustime.mta.info/api/siri/vehicle-monitoring.json",
+            params={
+                "key": mta_key
+            }
+        )
+
+        buses = []
+        if bus_response.status_code == 200:
+            data = bus_response.json()
+            activities = data["Siri"]["ServiceDelivery"]["VehicleMonitoringDelivery"][0]["VehicleActivity"]
+            for activity in activities:
+                loc = activity["MonitoredVehicleJourney"]["VehicleLocation"]
+                if loc["Latitude"] != 0.0 and loc["Longitude"] != 0.0:
+                    buses.append({
+                        "latitude": loc["Latitude"],
+                        "longitude": loc["Longitude"]
+                    })
+
+        mta_data["bus"] = buses
+
+    except Exception as e:
+        print("Error fetching or parsing bus data:", str(e))
+        mta_data["bus"] = []
 
     return jsonify(mta_data)
 
