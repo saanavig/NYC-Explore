@@ -40,11 +40,10 @@ const Homepage = () => {
     const [markerRefs, setMarkerRefs] = useState([]);
 
     // heatmap
-    const [heatmapLayer, setHeatmapLayer] = useState(null);
+    const [heatmapLayer, setHeatmapLayer] = useState();
     const [heatmapData, setHeatmapData] = useState([]);
 
-    //HERE: edit as more layers are added
-    const [activeLayers, setActiveLayers] = useState(["mta"]);
+    const [activeLayers, setActiveLayers] = useState([]);
 
     const apiKey = import.meta.env.VITE_MAPS_KEY;
     const autocompleteRef = useRef(null);
@@ -112,12 +111,11 @@ const Homepage = () => {
         );
     };
 
+    //ADD HERE - heatmap layers!!
     const [layerData, setLayerData] = useState({
         mta: [],
-        pedestrian: [],
-        traffic: [],
-        bicycle: [],
         sound: [],
+        crowd: []
     });
 
 
@@ -154,56 +152,92 @@ const Homepage = () => {
         .catch(err => console.error("Error fetching /mta:", err));
     }, []);
 
-    //custom heatmap for mta
-    const customGradient = [
-        "rgba(0, 31, 63, 0.1)",
-        "rgba(63, 81, 181, 0.3)",
-        "rgba(103, 58, 183, 0.4)",
-        "rgba(156, 39, 176, 0.5)",
-        "rgba(224, 64, 251, 0.6)"
-    ];
+    //crowd
+    useEffect(() => {
+        fetch("http://127.0.0.1:5000/crowd")
+            .then((res) => res.json())
+            .then((data) => {
+                const crowdPoints = data.map(
+                (point) => new window.google.maps.LatLng(point.latitude, point.longitude)
+                );
+                setLayerData((prev) => ({ ...prev, crowd: crowdPoints }));
+            })
+            .catch((err) => console.error("Error fetching /crowd:", err));
+        }, []);
 
+    //sound
+        useEffect(() => {
+            fetch("http://127.0.0.1:5000/sound")
+                .then((res) => res.json())
+                .then((data) => {
+                    const soundPoints = data.map(
+                        (point) => new window.google.maps.LatLng(point.latitude, point.longitude)
+                    );
+                    setLayerData((prev) => ({ ...prev, sound: soundPoints }));
+                })
+                .catch((err) => console.error("Error fetching /sound:", err));
+        }, []);
+
+
+    //custom heatmap for mta
+    const customGradient = {
+        mta: [
+            "rgba(0, 31, 63, 0.1)",
+            "rgba(63, 81, 181, 0.3)",
+            "rgba(103, 58, 183, 0.4)",
+            "rgba(156, 39, 176, 0.5)",
+            "rgba(224, 64, 251, 0.6)"
+        ],
+        sound: [
+            "rgba(70, 130, 180, 0.7)",
+            "rgba(123, 104, 238, 0.6)",
+            "rgba(176, 224, 230, 0.6)",
+            "rgba(139, 69, 19, 0.7)",
+            "rgba(112, 128, 144, 0.8)"
+        ],
+        crowd: [
+            "rgba(139, 0, 0, 0.2)",
+            "rgba(178, 34, 34, 0.3)",
+            "rgba(220, 20, 60, 0.4)",
+            "rgba(255, 0, 0, 0.5)",
+            "rgba(255, 99, 71, 0.6)"
+        ]
+
+    };
 
     //clear heatmap
     useEffect(() => {
-
         if (!map) return;
-        const combined = [];
 
-        activeLayers.forEach((layer) => {
-            if (Array.isArray(layerData[layer])) 
-            {
-                combined.push(...layerData[layer]);
-            }
-        });
-
-        if (mapMode === "heatmap") 
-        {
-            const newLayer = new window.google.maps.visualization.HeatmapLayer({
-                data: combined,
-                map: map,
-                radius: 20,
-                opacity: 0.6,
-                gradient: customGradient,
-            });
-
-            setHeatmapLayer((oldLayer) => {
-
-                if (oldLayer) oldLayer.setMap(null);
-                    return newLayer;
-            });
+        // Clear previous heatmap layers
+        if (Array.isArray(heatmapLayer)) {
+            heatmapLayer.forEach((layer) => layer.setMap(null));
+        } else if (heatmapLayer) {
+            heatmapLayer.setMap(null);
         }
-
-        else
-        {
-            if (heatmapLayer)
-            {
-                heatmapLayer.setMap(null);
-                setHeatmapLayer(null);
-            }
+    
+        if (mapMode === "heatmap") {
+            const newLayers = [];
+    
+            activeLayers.forEach((layerKey) => {
+                const layerPoints = layerData[layerKey];
+                if (Array.isArray(layerPoints) && layerPoints.length > 0) {
+                    const newLayer = new window.google.maps.visualization.HeatmapLayer({
+                        data: layerPoints,
+                        map: map,
+                        radius: 20,
+                        opacity: 0.6,
+                        gradient: customGradient[layerKey] || undefined,
+                    });
+                    newLayers.push(newLayer);
+                }
+            });
+    
+            setHeatmapLayer(newLayers);
+        } else {
+            setHeatmapLayer(null);
         }
     }, [mapMode, map, activeLayers, layerData]);
-
 
     const handlePlaceSelect = () => {
         const place = autocompleteRef.current.getPlace();
@@ -333,39 +367,22 @@ const Homepage = () => {
                                 <label>
                                     <input
                                     type="checkbox"
-                                    checked={activeLayers.includes("311")}
-                                    onChange={() => toggleLayer("311")}
+                                    checked={activeLayers.includes("sound")}
+                                    onChange={() => toggleLayer("sound")}
                                     />
-                                    Ambience Sound 
+                                    Ambience Sound
                                 </label>
 
                                 <label>
                                     <input
                                     type="checkbox"
-                                    checked={activeLayers.includes("pedestrian")}
-                                    onChange={() => toggleLayer("pedestrian")}
+                                    checked={activeLayers.includes("crowd")}
+                                    onChange={() => toggleLayer("crowd")}
                                     />
-                                    Pedestrian Counts
-                                </label>
-                                <label>
-                                    <input
-                                    type="checkbox"
-                                    checked={activeLayers.includes("bicycle")}
-                                    onChange={() => toggleLayer("bicycle")}
-                                    />
-                                    Bicycle Traffic
+                                    Crowd
                                 </label>
 
-                                <label>
-                                    <input
-                                    type="checkbox"
-                                    checked={activeLayers.includes("traffic")}
-                                    onChange={() => toggleLayer("traffic")}
-                                    />
-                                    Vehicle Flow
-                                </label>
                             </div>
-
 
                             <GoogleMap mapContainerStyle={mapContainerStyle} center={mapCenter} zoom={12} onLoad={(mapInstance) => setMap(mapInstance)}>
                                 {console.log("Places data:", places)}
