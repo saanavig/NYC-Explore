@@ -5,8 +5,8 @@ from flask_cors import CORS
 from dotenv import load_dotenv
 import requests
 import json
-from google.transit import gtfs_realtime_pb2
-
+# from google.transit import gtfs_realtime_pb2
+# import re
 
 app = Flask(__name__)
 CORS(app)
@@ -20,6 +20,7 @@ google_maps_key = os.getenv("GOOGLE_MAPS_API_KEY")
 eventbrite_key = os.getenv("EVENTBRITE_KEY")
 eventbrite_url = "https://www.eventbriteapi.com/v3/"
 mta_key = os.getenv("MTA_API_KEY")
+# open_data_key = os.getenv("NYC_API_KEY")
 
 @app.route('/')
 def home():
@@ -255,7 +256,7 @@ def get_data():
 
 #311 sound data
 @app.route('/sound', methods=['GET'])
-def get_311_noise_complaints():
+def get_311():
     try:
         response = requests.get(
             "https://data.cityofnewyork.us/resource/erm2-nwe9.json",
@@ -285,7 +286,37 @@ def get_311_noise_complaints():
         print("Error fetching 311 data:", str(e))
         return jsonify([]), 500
 
+@app.route('/crowd', methods=['GET'])
+def get_crowd():
+    try:
+        response = requests.get(
+            "https://data.cityofnewyork.us/resource/erm2-nwe9.json",
+            params={
+                "$limit": 1000,
+                "$where": "complaint_type in ('Noise - Street/Sidewalk', 'Noise - Commercial', 'Loud Music/Party') AND latitude IS NOT NULL AND longitude IS NOT NULL",
+                "$order": "created_date DESC"
+            }
+        )
+        data = response.json()
+        points = []
 
+        for row in data:
+            try:
+                lat = float(row["latitude"])
+                lon = float(row["longitude"])
+                points.append({
+                    "latitude": lat,
+                    "longitude": lon
+                })
+            except Exception as e:
+                print("Skipping row:", e)
+
+        print(f"Returning {len(points)} crowd points")
+        return jsonify(points)
+
+    except Exception as e:
+        print("Error fetching crowd data:", str(e))
+        return jsonify([]), 500
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
