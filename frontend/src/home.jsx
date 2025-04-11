@@ -3,7 +3,7 @@ import "./home.css";
 import { Autocomplete, GoogleMap, InfoWindow, LoadScript, Marker } from "@react-google-maps/api";
 import React, { useEffect, useRef, useState } from "react";
 
-import { use } from "react";
+// import { use } from "react";
 
 const mapContainerStyle = {
     width: "100%",
@@ -36,6 +36,10 @@ const Homepage = () => {
     const [sortBy, setSortBy] = useState('none');
     const [showSortOptions, setShowSortOptions] = useState(false);
 
+    const [mapMode, setMapMode] = useState('events');
+    const [markerRefs, setMarkerRefs] = useState([]);
+
+
     const apiKey = import.meta.env.VITE_MAPS_KEY;
     const autocompleteRef = useRef(null);
 
@@ -48,7 +52,7 @@ const Homepage = () => {
     //todo: create sorting -- date, cost
     const getSortedPlaces = (places) => {
         const sortedPlaces = [...places];
-        
+
         const extractCost = (cost) => {
             if (!cost) return 0;
             const matches = cost.toString().match(/\d+(\.\d+)?/);
@@ -120,6 +124,18 @@ const Homepage = () => {
         }
     };
 
+    useEffect(() =>
+    {
+        if (mapMode === "heatmap") 
+        {
+            markerRefs.forEach(marker => marker.setMap(null));
+        }
+        else
+        {
+            markerRefs.forEach(marker => marker.setMap(map));
+        }
+    }, [mapMode]);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         console.log('Submitting:', newPlace);
@@ -176,11 +192,29 @@ const Homepage = () => {
             <div className="container">
                 <div className="content-wrapper">
                     <div className="page-layout">
+
                         <div className="map-container">
+
+                            {/* toggle for heatmap*/}
+                            <div className="map-mode-toggle">
+                                <button
+                                    className={`toggle-btn ${mapMode === 'events' ? 'active' : ''}`}
+                                    onClick={() => setMapMode('events')}
+                                >
+                                    Explore
+                                </button>
+                                <button
+                                    className={`toggle-btn ${mapMode === 'heatmap' ? 'active' : ''}`}
+                                    onClick={() => setMapMode('heatmap')}
+                                >
+                                    Heatmaps
+                                </button>
+                            </div>
+
                             <GoogleMap mapContainerStyle={mapContainerStyle} center={mapCenter} zoom={12}>
                                 {console.log("Places data:", places)}
 
-                                {places.map((place, index) => {
+                                {mapMode === "events" && places.map((place, index) => {
                                     if (place.latitude && place.longitude) {
                                         const markerPosition = { lat: Number(place.latitude), lng: Number(place.longitude) };
                                         return (
