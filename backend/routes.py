@@ -253,6 +253,39 @@ def get_data():
 
     return jsonify(mta_data)
 
+#311 sound data
+@app.route('/sound', methods=['GET'])
+def get_311_noise_complaints():
+    try:
+        response = requests.get(
+            "https://data.cityofnewyork.us/resource/erm2-nwe9.json",
+            params={
+                "$limit": 500,
+                "$where": "complaint_type='Noise - Street/Sidewalk' OR complaint_type='Noise - Commercial' OR complaint_type='Loud Music/Party' OR descriptor='Crowd'",
+                "$order": "created_date DESC"
+            }
+        )
+
+        data = response.json()
+        results = []
+
+        for item in data:
+            if 'latitude' in item and 'longitude' in item:
+                results.append({
+                    "latitude": float(item["latitude"]),
+                    "longitude": float(item["longitude"]),
+                    "complaint_type": item.get("complaint_type"),
+                    "descriptor": item.get("descriptor"),
+                    "created_date": item.get("created_date")
+                })
+
+        return jsonify(results)
+
+    except Exception as e:
+        print("Error fetching 311 data:", str(e))
+        return jsonify([]), 500
+
+
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
