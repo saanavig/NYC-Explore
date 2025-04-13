@@ -18,17 +18,20 @@ const UserDropdown = ({ user }) => {
         const { data, error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
-                redirectTo: 'http://localhost:5173'
+                redirectTo: 'http://localhost:5173',
+                scopes: 'https://www.googleapis.com/auth/calendar.readonly'
             }
         });
         if (error) console.error('Error:', error.message);
     };
 
+
     const handleSignup = async () => {
         const { data, error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
-                redirectTo: 'http://localhost:5173'
+                redirectTo: 'http://localhost:5173',
+                scopes: 'https://www.googleapis.com/auth/calendar.readonly'
             }
         });
         if (error) console.error('Error:', error.message);
