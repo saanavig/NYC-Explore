@@ -50,10 +50,10 @@ New York City is bustling with activity, but it’s easy to get overwhelmed or m
 
 2. Install Dependencies
 
-        ```
+
         npm install
         python install -r requirements.txt
-        ```
+
 
 
 3. Set environment variables in a .env file:
