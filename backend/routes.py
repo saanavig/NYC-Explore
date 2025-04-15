@@ -287,6 +287,7 @@ def get_311():
         print("Error fetching 311 data:", str(e))
         return jsonify([]), 500
 
+# needs to be fixed
 @app.route('/crowd', methods=['GET'])
 def get_crowd():
     try:

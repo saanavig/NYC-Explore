@@ -1,121 +1,99 @@
-# NYC-Explore
+# 🗽 NYC Explore
 
-## Project Setup Instructions
+Welcome to **NYC Explore** — your personalized map companion for navigating New York City smarter.
 
-### 1. Install Node.js and Setup React Frontend
+## 📌 What is NYC Explore?
 
-### Download Node.js
-If you haven't installed Node.js, download it from the official [Node.js website](https://nodejs.org/). This will also install npm (Node Package Manager), which is used to install project dependencies.
+**NYC Explore** is an interactive web application that helps locals and tourists discover events, avoid crowds, and plan city outings with real-time intelligence. From hidden gems to major hotspots, it brings together user-submitted events, city data, and planning tools — all visualized on a dynamic Google Map.
 
-After installing Node.js, verify that it's installed correctly:
+---
 
-```
-node -v
-npm -v
-```
+## 🚀 Why NYC-Explore?
 
-Install Frontend Dependencies
-Navigate to the frontend project directory:
+New York City is bustling with activity, but it’s easy to get overwhelmed or miss out. Whether you're:
+- Trying to avoid noisy or crowded areas,
+- Looking for curated events happening nearby,
+- Planning a quiet park visit or an active evening out...
 
-```
-cd frontend
-```
+**NYC Explore** puts the power of real-time city data and event planning into your hands.
 
-Install necessary dependencies:
+---
 
-```
-npm install
-```
+## 🔥 Features
 
-This will install the dependencies listed in the package.json file.
+- 📍 **Community-Sourced Events**  
+  Users can contribute and explore custom events with rich details and visuals.
 
-2. Setting up Python Environment
+- 🌐 **Real-Time Heatmaps**  
+  Visualize live MTA transit activity, ambient noise levels, and crowd complaints using NYC Open Data sources.
 
-Create a Virtual Environment
-Navigate to the backend project directory:
+- 🧠 **Smart Filtering & Sorting**  
+  Filter events by keywords and sort by date or cost to customize your experience.
 
-```
-cd backend
-```
+- 🗺️ **Dynamic Google Map**  
+  Navigate through interactive map markers, explore boroughs, and toggle map layers.
 
-Create a virtual environment:
+- 📅 **Google Calendar Integration**  
+  Add events to your calendar with one click — perfect for trip planning or weekend hangouts.
 
-```
-python -m venv venv
-```
+---
 
-Activate the Virtual Environment (Mac)
 
-```
-source venv/bin/activate
-```
+## 📥 Getting Started
 
-Install Requirements:
+1. Clone the repository
 
-```
-pip install -r requirements.txt
-```
+   ```
+   git clone https://github.com/yourusername/nyc-explore.git
+   cd nyc-explore
+    ```
 
-3. Running the Project
-You need to run both the frontend and the backend simultaneously in a split terminal. Follow these steps:
+2. Install Dependencies
 
-Step 1: Open a Split Terminal
-In VSCode or other code editors with split terminal support, open a split terminal (use Command + \).
+        ```
+        npm install
+        python install -r requirements.txt
+        ```
 
-Step 2: Run the Frontend
-In one terminal window (for the frontend), run the following command to start the React development server:
 
-```
-npm run dev
-```
+3. Set environment variables in a .env file:
 
-Step 3: Run the Backend
-In the other terminal window (for the backend), run the following command to start the Python backend server:
+    ```
+    VITE_MAPS_KEY=your_google_maps_api_key
+    VITE_SUPABASE_URL=your_supabase_url
+    VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+    ```
 
-```
-python routes.py
-```
+4. Start the frontend:
 
-Note: You can cmd+click the frontend URL to see what we have built so far. I am connecting as we go!
+    ```
+    npm run dev
+    ```
 
-4. Adding Necessary Keys to .env File
+5. Start the backend:
 
-Backend .env Keys:
-Create a .env file in the backend project root directory if it doesn’t already exist.
+    ```
+    python routes.py
+    ```
 
-Add the necessary keys in the following format:
+--- 
 
-```
-# Supabase
-SUPABASE_URL=your_supabase_url_here
-SUPABASE_KEY=your_supabase_key_here
+## 👥 Developers & Team
 
-SUPABASE_DB_NAME=your_supabase_db_name_here
-SUPABASE_PASS=your_supabase_pass_here
-SUPABASE_USER=your_supabase_user_here
-SUPABASE_HOST=your_supabase_host_here
-SUPABASE_PORT=your_supabase_port_here
-SUPABASE_ENGINE=your_supabase_engine_here
+### 💻 Software Engineer  
+**Saanavi Goyal**  - _Lead developer and designer for backend, frontend, UI, and data integrations._
 
-# Google Authentication Keys
-GOOGLE_CLIENT_ID=your_google_client_id_here
-GOOGLE_CLIENT_SECRET=your_google_client_secret_here
-```
+### 📋 Project Manager  
+**Nicklaus Yao**  - _Managed scope, milestones, and team coordination._
 
-Note: I have already shared all the Supabase information with you, and you should be able to generate Google Authentication Keys directly from Cloud.
+### 🔍 Research  and Marketing
+**Betul Gurkan**, **Sherilyn Khuu**, **Kirsten Shyu**  - _Conducted data sourcing, feature ideation, and UX research._
 
-Frontend .env Keys:
-Create a .env file in the frontend project root directory if it doesn’t already exist.
+---
 
-Add the necessary keys in the following format:
+### 🙌 Special Thanks
 
-```
-VITE_SUPABASE_URL=your_supabase_url_here
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key_here
-VITE_API_URL=http://localhost:5000
+- **Allen Hillery** – Lecturer in Data and Society, Macaulay Honors College  
+- **Benjamin Robison** – Applied Machine Learning Scientist, Google  
+- **Frank Yoon** – Professional Statistician, Google  
 
-# Google Maps API Key
-VITE_MAPS_KEY=your_google_maps_api_key_here
-```
-
-Note: These keys should be the same as in the backend folder!
