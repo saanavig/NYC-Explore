@@ -328,23 +328,41 @@ const Homepage = () => {
         }
     };
 
-    const generateGoogleCalendarURL = (event) => {
-        const title = encodeURIComponent(event.name);
-        const details = encodeURIComponent(event.description || "");
-        const location = encodeURIComponent(event.location || "");
+    const generateGoogleCalendarUrl = (event) => {
+        try {
+            const { event_date, event_hours, name, location, description } = event;
 
-        const startDateObj = new Date(event.event_date);
-        const endDateObj = new Date(startDateObj.getTime() + 2 * 60 * 60 * 1000);
+            // Parse date + time
+            const eventDate = new Date(event_date);
+            const [startTimeStr, endTimeStr] = event_hours.split("-").map(s => s.trim());
+            const to24Hour = (timeStr) => {
+                const [time, modifier] = timeStr.split(" ");
+                let [hours, minutes] = time.split(":").map(Number);
+                if (modifier === "PM" && hours < 12) hours += 12;
+                if (modifier === "AM" && hours === 12) hours = 0;
+                return { hours, minutes };
+            };
 
-        const formatDate = (date) =>
-            date.toISOString().replace(/[-:]|\.\d{3}/g, "");
+            const start = to24Hour(startTimeStr);
+            const end = to24Hour(endTimeStr);
 
-        const start = formatDate(startDateObj);
-        const end = formatDate(endDateObj);
+            const pad = (num) => String(num).padStart(2, '0');
 
-        return `https://www.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${details}&location=${location}`;
+            const formatGoogleDate = (date, hours, minutes) => {
+                return `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}T${pad(hours)}${pad(minutes)}00`;
+            };
+
+            const startDateStr = formatGoogleDate(eventDate, start.hours, start.minutes);
+            const endDateStr = formatGoogleDate(eventDate, end.hours, end.minutes);
+
+            const calendarUrl = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(name)}&dates=${startDateStr}/${endDateStr}&details=${encodeURIComponent(description)}&location=${encodeURIComponent(location)}&sf=true&output=xml`;
+
+            return calendarUrl;
+        } catch (err) {
+            console.error("Error creating calendar link:", err);
+            return "#";
+        }
     };
-
 
     return (
         <LoadScript googleMapsApiKey={apiKey} libraries={["places", "visualization"]}>
@@ -425,41 +443,45 @@ const Homepage = () => {
 
                                 {selectedPlace && (
                                     <InfoWindow
-                                        position={{ lat: Number(selectedPlace.latitude), lng: Number(selectedPlace.longitude) }}
-                                        onCloseClick={() => setSelectedPlace(null)}
-                                    >
-                                        <div style={{ padding: "10px", maxWidth: "250px" }}>
-                                            <h3 style={{ margin: "5px 0" }}>{selectedPlace.name}</h3>
-                                            <p><strong>Location:</strong> {selectedPlace.location}</p>
-                                            <p><strong>Event Date:</strong> {new Date(selectedPlace.event_date).toLocaleDateString("en-US", {
-                                                year: 'numeric',
-                                                month: 'long',
-                                                day: 'numeric',
-                                            })}</p>
-                                            <p><strong>Event Hours:</strong> {selectedPlace.event_hours}</p>
-                                            <p><strong>Description:</strong> {selectedPlace.description}</p>
-                                            <p><strong>Cost:</strong> {selectedPlace.cost}</p>
+                                    position={{ lat: Number(selectedPlace.latitude), lng: Number(selectedPlace.longitude) }}
+                                    onCloseClick={() => setSelectedPlace(null)}
+                                >
+                                    <div style={{ padding: "10px", maxWidth: "250px" }}>
+                                        <h3 style={{ margin: "5px 0" }}>{selectedPlace.name}</h3>
+                                        <p><strong>Location:</strong> {selectedPlace.location}</p>
+                                        <p><strong>Event Date:</strong> {new Date(selectedPlace.event_date).toLocaleDateString("en-US", {
+                                            year: 'numeric',
+                                            month: 'long',
+                                            day: 'numeric',
+                                        })}</p>
+                                        <p><strong>Event Hours:</strong> {selectedPlace.event_hours}</p>
+                                        <p><strong>Description:</strong> {selectedPlace.description}</p>
+                                        <p><strong>Cost:</strong> {selectedPlace.cost}</p>
 
-                                            {/* Goofle Calendar Button */}
-                                            <a
-                                                href={generateGoogleCalendarURL(selectedPlace)}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                style={{
-                                                    display: "inline-block",
-                                                    marginTop: "10px",
-                                                    padding: "6px 12px",
-                                                    backgroundColor: "#5e259b",
-                                                    color: "white",
-                                                    borderRadius: "6px",
-                                                    textDecoration: "none",
-                                                    fontSize: "0.9em"
-                                                }}
-                                            >
-                                                Add to Google Calendar
-                                            </a>
-                                        </div>
-                                    </InfoWindow>
+                                        {/* Goofle Calendar Button */}
+                                        <a
+                                            href={generateGoogleCalendarUrl(selectedPlace)}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            style={{
+                                                display: "block",
+                                                margin: "20px auto",
+                                                backgroundColor: "#5e259b",
+                                                color: "white",
+                                                padding: "12px 24px",
+                                                borderRadius: "8px",
+                                                textDecoration: "none",
+                                                fontSize: "1rem",
+                                                fontWeight: "600",
+                                                textAlign: "center",
+                                                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                                                transition: "background 0.3s ease"
+                                            }}
+                                        >
+                                            Add to Google Calendar
+                                        </a>
+                                    </div>
+                                </InfoWindow>
                                 )}
 
                             </GoogleMap>
