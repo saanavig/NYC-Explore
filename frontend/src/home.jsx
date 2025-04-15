@@ -328,6 +328,24 @@ const Homepage = () => {
         }
     };
 
+    const generateGoogleCalendarURL = (event) => {
+        const title = encodeURIComponent(event.name);
+        const details = encodeURIComponent(event.description || "");
+        const location = encodeURIComponent(event.location || "");
+
+        const startDateObj = new Date(event.event_date);
+        const endDateObj = new Date(startDateObj.getTime() + 2 * 60 * 60 * 1000);
+
+        const formatDate = (date) =>
+            date.toISOString().replace(/[-:]|\.\d{3}/g, "");
+
+        const start = formatDate(startDateObj);
+        const end = formatDate(endDateObj);
+
+        return `https://www.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${details}&location=${location}`;
+    };
+
+
     return (
         <LoadScript googleMapsApiKey={apiKey} libraries={["places", "visualization"]}>
 
@@ -421,9 +439,29 @@ const Homepage = () => {
                                             <p><strong>Event Hours:</strong> {selectedPlace.event_hours}</p>
                                             <p><strong>Description:</strong> {selectedPlace.description}</p>
                                             <p><strong>Cost:</strong> {selectedPlace.cost}</p>
+
+                                            {/* Goofle Calendar Button */}
+                                            <a
+                                                href={generateGoogleCalendarURL(selectedPlace)}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                style={{
+                                                    display: "inline-block",
+                                                    marginTop: "10px",
+                                                    padding: "6px 12px",
+                                                    backgroundColor: "#5e259b",
+                                                    color: "white",
+                                                    borderRadius: "6px",
+                                                    textDecoration: "none",
+                                                    fontSize: "0.9em"
+                                                }}
+                                            >
+                                                Add to Google Calendar
+                                            </a>
                                         </div>
                                     </InfoWindow>
                                 )}
+
                             </GoogleMap>
                         </div>
                         <div className="places-list">
