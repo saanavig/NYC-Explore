@@ -478,3 +478,49 @@ h1 {
     border: none;
     border-top: 1px solid #ddd;
 }
+
+.chat-toggle-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #5e259b;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    padding: 15px;
+    font-size: 1.5rem;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    cursor: pointer;
+    transition: background 0.3s ease;
+    z-index: 1000;
+  }
+  
+  .chat-toggle-button:hover {
+    background-color: #7e3f9a;
+  }
+  
+  .chat-popup {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    width: 320px;
+    height: 400px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    z-index: 1100;
+}
+
+.chat-header {
+    background-color: #5e259b;
+    color: white;
+    padding: 10px;
+    text-align: right;
+}
+
+.close-icon {
+    cursor: pointer;
+} 

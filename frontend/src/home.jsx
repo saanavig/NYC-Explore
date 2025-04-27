@@ -1,7 +1,10 @@
 import "./home.css";
 
 import { Autocomplete, GoogleMap, InfoWindow, LoadScript, Marker } from "@react-google-maps/api";
+import { FaCommentDots, FaTimes } from 'react-icons/fa';
 import React, { useEffect, useRef, useState } from "react";
+
+import Chat from "./components/chat";
 
 // import { use } from "react";
 
@@ -53,6 +56,9 @@ const Homepage = () => {
         place.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
         place.location.toLowerCase().includes(searchTerm.toLowerCase())
     );
+
+    //chat bot
+    const [chatOpen, setChatOpen] = useState(false);
 
     //todo: create sorting -- date, cost
     const getSortedPlaces = (places) => {
@@ -484,6 +490,25 @@ const Homepage = () => {
                                 </InfoWindow>
                                 )}
 
+                                <button
+                                    className="chat-toggle-button"
+                                    onClick={() => setChatOpen(true)}
+                                    >
+                                    <FaCommentDots size={24} />
+                                    </button>
+
+                                    {chatOpen && (
+                                    <div className="chat-popup">
+                                        <div className="chat-header">
+                                        <FaTimes
+                                            className="close-icon"
+                                            size={20}
+                                            onClick={() => setChatOpen(false)}
+                                        />
+                                        </div>
+                                        <Chat />
+                                    </div>
+                                    )}
                             </GoogleMap>
                         </div>
                         <div className="places-list">
