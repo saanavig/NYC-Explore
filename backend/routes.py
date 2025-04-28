@@ -341,10 +341,13 @@ def chatbot():
             User's message: {user_input}
             """)
 
-        if hasattr(response, 'candidates') and response.candidates:
+        if hasattr(response, 'text') and response.text:
+            reply = response.text.strip()
+        elif hasattr(response, 'candidates') and response.candidates:
             reply = response.candidates[0].content.parts[0].text.strip()
         else:
             reply = "Sorry, I couldn't generate a response."
+
 
         return jsonify({ "reply": reply })
 
