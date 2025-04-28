@@ -113,7 +113,14 @@ const Homepage = () => {
                 const data = await response.json();
 
                 if (data.status === "success") {
-                    setPlaces(data.data);
+                    const today = new Date();
+                    const upcomingEvents = data.data.filter(event => {
+                        if (!event.event_date) return false;
+                        const eventDate = new Date(event.event_date);
+                        return eventDate >= today;
+                    });
+
+setPlaces(upcomingEvents);
                 }
             } catch (error) {
                 console.error("Error fetching places:", error);
