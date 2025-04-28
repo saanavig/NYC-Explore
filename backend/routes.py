@@ -367,5 +367,67 @@ def chatbot():
         print("Error in chatbot:", str(e))
         return jsonify({ "reply": "Sorry, I couldn't generate a response." }), 500
 
+@app.route('/user/preferences', methods=['PUT'])
+def update_preferences():
+    try:
+        data = request.json
+        user_id = data.get('user_id')
+        interests = data.get('interests', [])
+        boroughs = data.get('boroughs', [])
+
+        if not user_id:
+            return jsonify({"status": "error", "message": "Missing user_id"}), 400
+
+        response = supabase.table('user_preferences').update({
+            "interests": interests,
+            "boroughs": boroughs
+        }).eq('user_id', user_id).execute()
+
+        if response.data:
+            return jsonify({"status": "success", "message": "Preferences updated successfully."})
+        else:
+            return jsonify({"status": "error", "message": "User preferences not found."}), 404
+
+    except Exception as e:
+        print("Error updating preferences:", str(e))
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+@app.route('/user/preferences', methods=['GET'])
+def get_user_preferences():
+    try:
+        user_id = request.args.get('user_id')
+
+        if not user_id:
+            return jsonify({
+                "status": "error",
+                "message": "Missing user_id parameter"
+            }), 400
+
+        response = supabase.table('user_preferences') \
+            .select('interests, boroughs') \
+            .eq('user_id', user_id) \
+            .single() \
+            .execute()
+
+        if response.data:
+            return jsonify({
+                "status": "success",
+                "interests": response.data.get('interests', []),
+                "boroughs": response.data.get('boroughs', [])
+            }), 200
+        else:
+            return jsonify({
+                "status": "error",
+                "message": "No preferences found for this user."
+            }), 404
+
+    except Exception as e:
+        print(f"Error fetching user preferences: {str(e)}")
+        return jsonify({
+            "status": "error",
+            "message": "Failed to fetch user preferences"
+        }), 500
+
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

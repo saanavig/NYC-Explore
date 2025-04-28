@@ -25,18 +25,14 @@ const Profile = () => {
                     return;
                 }
 
-                const { data, error } = await supabase
-                    .from("user_preferences")
-                    .select("interests, boroughs")
-                    .eq("user_id", user.id)
-                    .single();
+                const res = await fetch(`http://127.0.0.1:5000/user/preferences?user_id=${user.id}`);
+                const json = await res.json();
 
-                if (error) {
-                    console.error("Error fetching preferences:", error);
-                } else if (data) {
-                    console.log("Loaded user preferences:", data);
-                    setPreferences(data.interests || []);
-                    setBoroughs(data.boroughs || []);
+                if (json.status === "success" && json.data) {
+                    setPreferences(json.data.interests || []);
+                    setBoroughs(json.data.boroughs || []);
+                } else {
+                    console.error("Error loading preferences:", json.message);
                 }
             } catch (err) {
                 console.error("Unexpected error fetching profile:", err);
@@ -60,8 +56,6 @@ const Profile = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log("Saving Preferences:", preferences);
-        console.log("Saving Boroughs:", boroughs);
 
         try {
             const { data: { user } } = await supabase.auth.getUser();
@@ -70,20 +64,26 @@ const Profile = () => {
                 return;
             }
 
-            const { error } = await supabase
-                .from("user_preferences")
-                .upsert({
+            const res = await fetch("http://127.0.0.1:5000/user/preferences", {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
                     user_id: user.id,
                     interests: preferences,
                     boroughs: boroughs
-                });
+                })
+            });
 
-            if (error) {
-                console.error("Error updating preferences:", error);
-                alert("Failed to save profile.");
-            } else {
+            const json = await res.json();
+
+            if (json.status === "success") {
                 setToast("Profile updated successfully! 🎉");
-                setTimeout(() => setToast(""), 3000); // clear toast after 3 seconds
+                setTimeout(() => setToast(""), 3000);
+            } else {
+                console.error("Failed to save profile:", json.message);
+                alert("Failed to save profile.");
             }
         } catch (err) {
             console.error("Unexpected error updating profile:", err);
