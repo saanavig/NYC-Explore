@@ -4,9 +4,10 @@ import os
 from flask_cors import CORS
 from dotenv import load_dotenv
 import requests
-import json
+# import json
 # from google.transit import gtfs_realtime_pb2
 # import re
+import google.generativeai as genai
 
 app = Flask(__name__)
 CORS(app)
@@ -20,6 +21,7 @@ google_maps_key = os.getenv("GOOGLE_MAPS_API_KEY")
 eventbrite_key = os.getenv("EVENTBRITE_KEY")
 eventbrite_url = "https://www.eventbriteapi.com/v3/"
 mta_key = os.getenv("MTA_API_KEY")
+gemini_key = os.getenv("GEMINI_API_KEY")
 # open_data_key = os.getenv("NYC_API_KEY")
 
 @app.route('/')
@@ -287,7 +289,6 @@ def get_311():
         print("Error fetching 311 data:", str(e))
         return jsonify([]), 500
 
-# needs to be fixed
 @app.route('/crowd', methods=['GET'])
 def get_crowd():
     try:
@@ -319,6 +320,37 @@ def get_crowd():
     except Exception as e:
         print("Error fetching crowd data:", str(e))
         return jsonify([]), 500
+
+@app.route('/chatbot', methods=['POST'])
+def chatbot():
+    try:
+        user_input = request.json.get('message', '')
+
+        model = genai.GenerativeModel('gemini-2.0-flash')
+
+        response = model.generate_content(f"""
+            You are a helpful and friendly NYC event and activity assistant.
+
+            - Always respond using **Markdown format**.
+            - Use **bold titles** for sections and **bullet points** for listing recommendations.
+            - Write in short, clear, and friendly sentences.
+            - Only talk about events, food, outdoor activities, and attractions in New York City.
+            - If the user asks about other topics, politely guide them back to NYC-related suggestions.
+            - If you know any current events happening in NYC, feel free to include them.
+
+            User's message: {user_input}
+            """)
+
+        if hasattr(response, 'candidates') and response.candidates:
+            reply = response.candidates[0].content.parts[0].text.strip()
+        else:
+            reply = "Sorry, I couldn't generate a response."
+
+        return jsonify({ "reply": reply })
+
+    except Exception as e:
+        print("Error in chatbot:", str(e))
+        return jsonify({ "reply": "Sorry, I couldn't generate a response." }), 500
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

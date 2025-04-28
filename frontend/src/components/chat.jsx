@@ -2,20 +2,7 @@ import "./chat.css";
 
 import React, { useState } from "react";
 
-const generateBotResponse = (userInput) => {
-    if (userInput.toLowerCase().includes("music"))
-    {
-        return "You might enjoy a live concert happening downtown tonight!";
-    }
-    else if (userInput.toLowerCase().includes("food"))
-    {
-        return "There’s a food festival in Queens you should check out!";
-    }
-    else
-    {
-        return "Tell me what you're interested in — music, art, food, outdoor events?";
-    }
-};
+import ReactMarkdown from 'react-markdown';
 
 const Chat = () => {
     const [messages, setMessages] = useState([
@@ -23,16 +10,30 @@ const Chat = () => {
     ]);
     const [input, setInput] = useState("");
 
-    const handleSend = () => {
+    const handleSend = async () => {
         if (!input.trim()) return;
 
-        setMessages((prev) => [...prev, { sender: "user", text: input }]);
-        const botReply = generateBotResponse(input);
+        const userMessage = input;
+        setMessages((prev) => [...prev, { sender: "user", text: userMessage }]);
         setInput("");
 
-        setTimeout(() => {
+        try {
+            const res = await fetch("http://127.0.0.1:5000/chatbot", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ message: userMessage }),
+            });
+
+            const data = await res.json();
+            const botReply = data.reply || "Sorry, I couldn't understand.";
+
             setMessages((prev) => [...prev, { sender: "bot", text: botReply }]);
-        }, 500);
+        } catch (err) {
+            console.error("Error communicating with chatbot:", err);
+            setMessages((prev) => [...prev, { sender: "bot", text: "Oops! Something went wrong." }]);
+        }
     };
 
     return (
@@ -40,7 +41,11 @@ const Chat = () => {
             <div className="chat-messages">
                 {messages.map((msg, idx) => (
                     <div key={idx} className={`chat-message ${msg.sender}`}>
-                        {msg.text}
+                        {msg.sender === "bot" ? (
+                            <ReactMarkdown>{msg.text}</ReactMarkdown>
+                        ) : (
+                            <ReactMarkdown>{msg.text}</ReactMarkdown>
+                        )}
                     </div>
                 ))}
             </div>
