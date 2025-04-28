@@ -20,7 +20,8 @@ const Profile = () => {
             try {
                 const { data: { user } } = await supabase.auth.getUser();
 
-                if (!user) {
+                if (!user)
+                {
                     console.error("No logged-in user found.");
                     return;
                 }
@@ -28,15 +29,25 @@ const Profile = () => {
                 const res = await fetch(`http://127.0.0.1:5000/user/preferences?user_id=${user.id}`);
                 const json = await res.json();
 
-                if (json.status === "success" && json.data) {
+                if (json.status === "success" && json.data)
+                {
                     setPreferences(json.data.interests || []);
                     setBoroughs(json.data.boroughs || []);
-                } else {
-                    console.error("Error loading preferences:", json.message);
                 }
-            } catch (err) {
+                else if (json.status === "success" && !json.data)
+                {
+                    console.log("No preferences yet. Starting fresh.");
+                    setPreferences([]);
+                    setBoroughs([]);
+                }
+                else {
+                    console.error("Error loading preferences:", json.message || "Unknown error");
+                }
+            }
+            catch (err) {
                 console.error("Unexpected error fetching profile:", err);
-            } finally {
+            }
+            finally {
                 setLoading(false);
             }
         };
@@ -81,11 +92,13 @@ const Profile = () => {
             if (json.status === "success") {
                 setToast("Profile updated successfully! 🎉");
                 setTimeout(() => setToast(""), 3000);
-            } else {
+            }
+            else {
                 console.error("Failed to save profile:", json.message);
                 alert("Failed to save profile.");
             }
-        } catch (err) {
+        }
+        catch (err) {
             console.error("Unexpected error updating profile:", err);
             alert("An error occurred.");
         }

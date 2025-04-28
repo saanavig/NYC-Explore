@@ -5,8 +5,12 @@ import { FaCommentDots, FaTimes } from 'react-icons/fa';
 import React, { useEffect, useRef, useState } from "react";
 
 import Chat from "./components/chat";
+import { createClient } from '@supabase/supabase-js';
 
-// import { use } from "react";
+const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_ANON_KEY
+);
 
 const mapContainerStyle = {
     width: "100%",
@@ -19,9 +23,7 @@ const Homepage = () => {
         lng: -74.006
     });
 
-    //search bar
     const [searchTerm, setSearchTerm] = useState('');
-
     const [places, setPlaces] = useState([]);
     const [showModal, setShowModal] = useState(false);
     const [newPlace, setNewPlace] = useState({
@@ -32,7 +34,6 @@ const Homepage = () => {
         cost: '',
         image: null
     });
-
     const [map, setMap] = useState(null);
     const [selectedPlace, setSelectedPlace] = useState(null);
 
@@ -42,14 +43,16 @@ const Homepage = () => {
     const [mapMode, setMapMode] = useState('events');
     const [markerRefs, setMarkerRefs] = useState([]);
 
-    // heatmap
     const [heatmapLayer, setHeatmapLayer] = useState();
-    const [heatmapData, setHeatmapData] = useState([]);
-
     const [activeLayers, setActiveLayers] = useState([]);
 
     const apiKey = import.meta.env.VITE_MAPS_KEY;
     const autocompleteRef = useRef(null);
+
+    const [chatOpen, setChatOpen] = useState(false);
+
+    const [userPreferences, setUserPreferences] = useState([]);
+    const [userBoroughs, setUserBoroughs] = useState([]);
 
     const filteredPlaces = places.filter(place =>
         place.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -57,10 +60,6 @@ const Homepage = () => {
         place.location.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    //chat bot
-    const [chatOpen, setChatOpen] = useState(false);
-
-    //todo: create sorting -- date, cost
     const getSortedPlaces = (places) => {
         const sortedPlaces = [...places];
 
@@ -86,14 +85,68 @@ const Homepage = () => {
     };
 
     useEffect(() => {
-        fetch("http://127.0.0.1:5000/events")
-            .then(response => response.json())
-            .then(data => {
+        const fetchEvents = async () => {
+            try {
+                const response = await fetch("http://127.0.0.1:5000/events");
+                const data = await response.json();
+
                 if (data.status === "success") {
-                    setPlaces(data.data);
+                    const allEvents = data.data;
+
+                    if (userPreferences.length > 0 || userBoroughs.length > 0) {
+                        const personalized = allEvents.filter((event) => {
+                            const matchesInterest = userPreferences.some(pref =>
+                                event.name?.toLowerCase().includes(pref.toLowerCase()) ||
+                                event.description?.toLowerCase().includes(pref.toLowerCase())
+                            );
+
+                            const matchesBorough = userBoroughs.some(borough =>
+                                event.location?.toLowerCase().includes(borough.toLowerCase())
+                            );
+
+                            return matchesInterest || matchesBorough;
+                        });
+
+                        setPlaces(personalized);
+                        console.log("Showing personalized events:", personalized.length);
+                    } else {
+                        setPlaces(allEvents);
+                        console.log("Showing all events");
+                    }
                 }
-            })
-            .catch(error => console.error("Error fetching places:", error));
+            } catch (error) {
+                console.error("Error fetching places:", error);
+            }
+        };
+
+        fetchEvents();
+    }, [userPreferences, userBoroughs]);
+
+    useEffect(() => {
+        const fetchUserPreferences = async () => {
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (user) {
+                    const { data, error } = await supabase
+                        .from('user_preferences')
+                        .select('interests, boroughs')
+                        .eq('user_id', user.id)
+                        .single();
+
+                    if (error) {
+                        console.error('Error fetching user preferences:', error);
+                    } else if (data) {
+                        setUserPreferences(data.interests || []);
+                        setUserBoroughs(data.boroughs || []);
+                        console.log('Fetched user preferences:', data);
+                    }
+                }
+            } catch (err) {
+                console.error('Unexpected error fetching user preferences:', err);
+            }
+        };
+
+        fetchUserPreferences();
     }, []);
 
     //checking if the places are being fetched correctly with lng/lat
