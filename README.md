@@ -15,29 +15,36 @@ New York City is bustling with activity, but it’s easy to get overwhelmed or m
 - Looking for curated events happening nearby,
 - Planning a quiet park visit or an active evening out...
 
-**NYC Explore** puts the power of real-time city data and event planning into your hands.
+**NYC Explore** puts the power of real-time city data, personalized event discovery, and smart trip planning into your hands — all from one intuitive platform.
+
+Find local happenings, customize your feed, and navigate smarter with dynamic maps and live updates.
 
 ---
 
 ## 🔥 Features
 
-- 📍 **Community-Sourced Events**  
-  Users can contribute and explore custom events with rich details and visuals.
+- 📍 **Community-Sourced & Curated Events**  
+  Browse upcoming events across all five boroughs — filtered by your interests and location preferences. Users can contribute custom events with rich details and visuals to build a vibrant community calendar.
 
-- 🌐 **Real-Time Heatmaps**  
-  Visualize live MTA transit activity, ambient noise levels, and crowd complaints using NYC Open Data sources.
+- 🌐 **Real-Time Heatmaps & Smart Maps**  
+  Visualize live MTA transit activity, ambient noise levels, and crowd complaints using NYC Open Data sources. Plan your journeys better with real-time event markers and crowd trends directly on an interactive Google Map.
 
-- 🧠 **Smart Filtering & Sorting**  
-  Filter events by keywords and sort by date or cost to customize your experience.
+- 🧠 **Smart Filtering & Personalization**  
+  Set your favorite event types and boroughs to tailor your experience. Easily filter events by keywords and sort by date, popularity, or cost — ensuring you find exactly what fits your mood.
 
-- 🗺️ **Dynamic Google Map**  
-  Navigate through interactive map markers, explore boroughs, and toggle map layers.
+- 🗺️ **Dynamic & Interactive Maps**  
+  Navigate with ease through borough-specific event markers, toggle between map layers, and explore hotspots or hidden gems. Make every trip more efficient and enjoyable.
 
 - 📅 **Google Calendar Integration**  
-  Add events to your calendar with one click — perfect for trip planning or weekend hangouts.
+  Instantly add events to your Google Calendar with one click. Perfect for seamless trip planning, scheduling weekend activities, or saving must-visit events.
+
+- 💬 **Live AI Chat Support**  
+  Have a question while exploring? Use our in-app AI chatbot to get instant tips, recommendations, and help without leaving the app.
+
+- 🔔 **Real-Time Event and Crowd Updates**  
+  Stay tuned with constantly refreshing event feeds and crowd data to catch new opportunities and avoid congested areas.
 
 ---
-
 
 ## 📥 Getting Started
 
