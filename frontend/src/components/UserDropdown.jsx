@@ -25,7 +25,6 @@ const UserDropdown = ({ user }) => {
         if (error) console.error('Error:', error.message);
     };
 
-
     const handleSignup = async () => {
         const { data, error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
@@ -42,6 +41,11 @@ const UserDropdown = ({ user }) => {
         if (error) console.error('Error:', error.message);
     };
 
+    const handleProfile = () => {
+        navigate('/profile');
+        setIsOpen(false);
+    };
+
     return (
         <div className="dropdown-container">
             <div 
@@ -50,6 +54,7 @@ const UserDropdown = ({ user }) => {
             >
                 Hello, {user?.user_metadata?.full_name?.split(' ')[0] || 'Guest'}
             </div>
+
             {isOpen && (
                 <div className="dropdown-menu">
                     {!user ? (
@@ -58,7 +63,10 @@ const UserDropdown = ({ user }) => {
                             <button onClick={handleSignup}>Sign Up</button>
                         </>
                     ) : (
-                        <button onClick={handleLogout}>Logout</button>
+                        <>
+                            <button onClick={handleProfile}>Profile</button>
+                            <button onClick={handleLogout}>Logout</button>
+                        </>
                     )}
                 </div>
             )}
