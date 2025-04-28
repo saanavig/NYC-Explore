@@ -8,8 +8,8 @@ import Chat from "./components/chat";
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
+    import.meta.env.VITE_SUPABASE_URL,
+    import.meta.env.VITE_SUPABASE_ANON_KEY
 );
 
 const mapContainerStyle = {
@@ -54,11 +54,33 @@ const Homepage = () => {
     const [userPreferences, setUserPreferences] = useState([]);
     const [userBoroughs, setUserBoroughs] = useState([]);
 
-    const filteredPlaces = places.filter(place =>
-        place.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        place.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        place.location.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const [showAllEvents, setShowAllEvents] = useState(false);
+
+    const filteredPlaces = places.filter((place) => {
+        const matchesSearch =
+            place.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            place.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            place.location.toLowerCase().includes(searchTerm.toLowerCase());
+
+        if (showAllEvents) {
+            return matchesSearch;
+        }
+
+        const matchesPreferences =
+            userPreferences.length === 0 ||
+            userPreferences.some(pref =>
+                (place.description && place.description.toLowerCase().includes(pref.toLowerCase())) ||
+                (place.name && place.name.toLowerCase().includes(pref.toLowerCase()))
+            );
+
+        const matchesBoroughs =
+            userBoroughs.length === 0 ||
+            userBoroughs.some(borough =>
+                (place.location && place.location.toLowerCase().includes(borough.toLowerCase()))
+            );
+
+        return matchesSearch && matchesPreferences && matchesBoroughs;
+    });
 
     const getSortedPlaces = (places) => {
         const sortedPlaces = [...places];
@@ -91,28 +113,7 @@ const Homepage = () => {
                 const data = await response.json();
 
                 if (data.status === "success") {
-                    const allEvents = data.data;
-
-                    if (userPreferences.length > 0 || userBoroughs.length > 0) {
-                        const personalized = allEvents.filter((event) => {
-                            const matchesInterest = userPreferences.some(pref =>
-                                event.name?.toLowerCase().includes(pref.toLowerCase()) ||
-                                event.description?.toLowerCase().includes(pref.toLowerCase())
-                            );
-
-                            const matchesBorough = userBoroughs.some(borough =>
-                                event.location?.toLowerCase().includes(borough.toLowerCase())
-                            );
-
-                            return matchesInterest || matchesBorough;
-                        });
-
-                        setPlaces(personalized);
-                        console.log("Showing personalized events:", personalized.length);
-                    } else {
-                        setPlaces(allEvents);
-                        console.log("Showing all events");
-                    }
+                    setPlaces(data.data);
                 }
             } catch (error) {
                 console.error("Error fetching places:", error);
@@ -120,7 +121,7 @@ const Homepage = () => {
         };
 
         fetchEvents();
-    }, [userPreferences, userBoroughs]);
+    }, []);
 
     useEffect(() => {
         const fetchUserPreferences = async () => {
@@ -577,31 +578,42 @@ const Homepage = () => {
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
                                     />
-                                    <div className="sort-container">
+                                <div className="sort-container">
+                                    <div className="sort-buttons">
                                         <button 
+                                            className="toggle-events-button" 
+                                            onClick={() => setShowAllEvents(prev => !prev)}
+                                        >
+                                            {showAllEvents ? "Show My Matches" : "Show All Events"}
+                                        </button>
+
+                                        <button x
                                             className="filter-button" 
                                             onClick={() => setShowSortOptions(!showSortOptions)}
                                         >
                                             <span>☰</span>
                                         </button>
-                                        {showSortOptions && (
-                                            <div className="sort-dropdown">
-                                                <select 
-                                                    value={sortBy} 
-                                                    onChange={(e) => {
-                                                        setSortBy(e.target.value);
-                                                        setShowSortOptions(false);
-                                                    }}
-                                                >
-                                                    <option value="none">Sort By</option>
-                                                    <option value="dateAsc">Date: Upcoming Events</option>
-                                                    <option value="dateDesc">Date: Later Events First</option>
-                                                    <option value="costAsc">Price: Low to High</option>
-                                                    <option value="costDesc">Price: High to Low</option>
-                                                </select>
-                                            </div>
-                                        )}
                                     </div>
+
+                                    {showSortOptions && (
+                                        <div className="sort-dropdown">
+                                            <select 
+                                                value={sortBy} 
+                                                onChange={(e) => {
+                                                    setSortBy(e.target.value);
+                                                    setShowSortOptions(false);
+                                                }}
+                                            >
+                                                <option value="none">Sort By</option>
+                                                <option value="dateAsc">Date: Upcoming Events</option>
+                                                <option value="dateDesc">Date: Later Events First</option>
+                                                <option value="costAsc">Price: Low to High</option>
+                                                <option value="costDesc">Price: High to Low</option>
+                                            </select>
+                                        </div>
+                                    )}
+                                </div>
+
                                 </div>
                             </div>
 

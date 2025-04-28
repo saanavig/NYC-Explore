@@ -223,6 +223,32 @@ h1 {
     color: #333;
 }
 
+.sort-buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.toggle-events-button {
+    background: #5e259b;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 0.9rem;
+    font-family: 'Poppins', sans-serif;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.toggle-events-button:hover {
+    background: #4a1d7a;
+}
+
 .filter-button {
     background: #5e259b;
     border: none;
@@ -248,6 +274,10 @@ h1 {
 }
 
 .sort-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
     position: relative;
 }
 
@@ -523,4 +553,25 @@ h1 {
 
 .close-icon {
     cursor: pointer;
-} 
+}
+
+.show-all-button {
+    background: #5e259b;
+    color: white;
+    border: none;
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-family: 'Poppins', sans-serif;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+}
+
+.show-all-button:hover {
+    background-color: #4a1d7a;
+}
