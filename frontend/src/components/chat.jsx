@@ -9,6 +9,7 @@ const Chat = () => {
         { sender: "bot", text: "Hi! How can I help you explore NYC today?" }
     ]);
     const [input, setInput] = useState("");
+    const [isTyping, setIsTyping] = useState(false);
 
     const handleSend = async () => {
         if (!input.trim()) return;
@@ -16,6 +17,7 @@ const Chat = () => {
         const userMessage = input;
         setMessages((prev) => [...prev, { sender: "user", text: userMessage }]);
         setInput("");
+        setIsTyping(true);
 
         try {
             const res = await fetch("http://127.0.0.1:5000/chatbot", {
@@ -33,6 +35,8 @@ const Chat = () => {
         } catch (err) {
             console.error("Error communicating with chatbot:", err);
             setMessages((prev) => [...prev, { sender: "bot", text: "Oops! Something went wrong." }]);
+        } finally {
+            setIsTyping(false);
         }
     };
 
@@ -41,13 +45,16 @@ const Chat = () => {
             <div className="chat-messages">
                 {messages.map((msg, idx) => (
                     <div key={idx} className={`chat-message ${msg.sender}`}>
-                        {msg.sender === "bot" ? (
-                            <ReactMarkdown>{msg.text}</ReactMarkdown>
-                        ) : (
-                            <ReactMarkdown>{msg.text}</ReactMarkdown>
-                        )}
+                        <ReactMarkdown>{msg.text}</ReactMarkdown>
                     </div>
                 ))}
+
+                {/* Typing indicator */}
+                {isTyping && (
+                    <div className="chat-message bot typing-indicator">
+                        <em>Typing...</em>
+                    </div>
+                )}
             </div>
 
             <div className="chat-input-area">
