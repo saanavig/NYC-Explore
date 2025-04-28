@@ -36,7 +36,7 @@ body {
 
 .features-section {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 30px;
     padding: 20px;
 }
@@ -67,7 +67,6 @@ body {
     line-height: 1.5;
 }
 
-
 .cta-button {
     margin-top: 25px;
     padding: 12px 24px;
@@ -95,4 +94,16 @@ body {
     font-size: 2em;
     color: #5e259b;
     margin-bottom: 20px;
+}
+
+@media (max-width: 1024px) {
+    .features-section {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .features-section {
+        grid-template-columns: 1fr;
+    }
 }
